@@ -13,7 +13,7 @@
     var network=switchNetwork(storageService.getContext());
 
     var bpl = require('bpljs');
-    bpl.crypto.setNetworkVersion(network.version || 23);
+    bpl.crypto.setNetworkVersion(network.version || 25);
 
     var clientVersion = require('../../package.json').version;
 

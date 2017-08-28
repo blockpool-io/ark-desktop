@@ -26,8 +26,7 @@
     "angular-qrcode": "^6.2.1",
     "angular-ui-router": "~0.2.15",
 
-    "bpljs":"github:blockpool-io/BPL-js#testnet",
-    "arkjs":"git://github.com/ArkEcosystem/ark-js#mainnet",
+    "bpljs":"github:blockpool-io/BPL-js#mainnet",
 
     "bip39": "^2.2.0",
     "jsqr": "^0.2.2"
