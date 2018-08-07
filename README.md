@@ -1,5 +1,8 @@
 # Multi Platform Bpl Lite Wallet
 
+[![Github Latest Release](https://img.shields.io/github/release/blockpool-io/bpl-desktop.svg)](https://github.com/blockpool-io/bpl-desktop/releases/latest)
+[![Github Downloads](https://img.shields.io/github/downloads/blockpool-io/bpl-desktop/latest/total.svg?logo=github)](https://github.com/blockpool-io/bpl-desktop/releases/latest)
+
 ## Download Windows 10 64 bit
 [Latest Release](https://blockpool.io/BPL_Wallet.html)
 
