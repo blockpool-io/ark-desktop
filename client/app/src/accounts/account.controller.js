@@ -101,7 +101,7 @@
     pluginLoader.triggerEvent('onStart')
 
     self.currencies = [
-      { name: 'btc', symbol: 'Ƀ' },
+      { name: 'btc', symbol: 'BTC' },
       { name: 'usd', symbol: '$' },
       { name: 'aud', symbol: 'A$' },
       { name: 'brl', symbol: 'R$' },
@@ -1163,6 +1163,7 @@
 
         $mdDialog.hide()
         const smartbridge = $scope.send.data.smartbridge
+        const votePayload = $scope.send.data.votePayload
         accountService.createTransaction(0, {
           ledger: selectedAccount.ledger,
           publicKey: selectedAccount.publicKey,
@@ -1170,6 +1171,7 @@
           toAddress: $scope.send.data.fromAddress,
           amount: 1,
           smartbridge: smartbridge,
+          votePayload: votePayload,
           masterpassphrase: $scope.send.data.passphrase,
           secondpassphrase: $scope.send.data.secondpassphrase
         }).then(
@@ -1794,7 +1796,7 @@
       transactions.forEach((trns) => {
         const date = new Date(trns.date)
         filecontent = filecontent + trns.id + ',' + trns.confirmations + ',' + date.toISOString() + ',' + trns.label + ',' + trns.humanTotal + ',' + trns.senderId + ',' + trns.recipientId +
-          ',' + trns.vendorField + eol
+          ',' + trns.vendorField + ',' + trns.votePayload + eol
       })
       const blob = new Blob([filecontent])
       const downloadLink = document.createElement('a')

@@ -14,8 +14,8 @@
   function AccountTransactionsController ($scope, $timeout, accountService, storageService) {
     const vm = this
 
-    vm.INCREASE_API = 50
-    vm.INCREASE_SCROLL = 50
+    vm.INCREASE_API = 100 
+    vm.INCREASE_SCROLL = 100
 
     vm.address = undefined
 

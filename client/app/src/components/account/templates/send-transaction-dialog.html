@@ -45,7 +45,12 @@
           <label>{{'Smartbridge'|translate}} ({{'Optional'|translate}})</label>
           <input ng-model="send.data.smartbridge" type="text" ng-required="false" maxlength="64" tabIndex="3">
         </md-input-container>
-
+        <!-- Adding Payload field -->
+        <md-input-container md-no-float class="md-block">
+          <label>{{'Vote Payload'|translate}} ({{'Optional'|translate}})</label>
+          <input ng-model="send.data.payload" type="text" ng-required="false" maxlength="512" tabIndex="3">
+        </md-input-container>
+        <!--  -->
         <div layout="row" flex layout-align="start start">
           <md-input-container flex="5" ng-if="!send.data.ledger">
             <qr-scanner input-callback="passphrase"></qr-scanner>

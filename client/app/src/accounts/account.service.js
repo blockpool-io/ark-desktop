@@ -286,7 +286,7 @@
         offset = 0
       }
       if (!limit) {
-        limit = 50
+        limit = 100
       }
       if (!store) {
         store = true
@@ -462,7 +462,7 @@
           }
 
           try {
-            transaction = bpl.transaction.createTransaction(config.toAddress, config.amount, config.smartbridge, config.masterpassphrase, config.secondpassphrase)
+            transaction = bpl.transaction.createTransaction(config.toAddress, config.amount, config.smartbridge, config.votePayload, config.masterpassphrase, config.secondpassphrase)
           } catch (e) {
             deferred.reject(e)
             return deferred.promise

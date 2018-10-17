@@ -30,6 +30,11 @@
           <md-list-item ng-if="validate.transaction.vendorField">
             <b translate>Smartbridge</b> <span class="md-secondary">{{validate.transaction.vendorField}}</span>
           </md-list-item>
+          <!-- Payload -->
+          <md-list-item ng-if="validate.transaction.vendorField">
+            <b translate>Vote Payload</b> <span class="md-secondary">{{validate.transaction.votePayload}}</span>
+          </md-list-item>
+
           <md-list-item ng-if="validate.transaction.amount">
             <b translate>Amount ({{ul.network.symbol}})</b> <span class="md-secondary">{{validate.humanAmount}}</span>
           </md-list-item>

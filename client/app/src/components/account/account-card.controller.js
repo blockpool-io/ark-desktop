@@ -143,6 +143,8 @@
         toAddress: formData.toAddress,
         amount: parseInt((formData.amount * BPLTOSHI_UNIT).toFixed(0)),
         smartbridge: formData.smartbridge,
+        // Payload for vote
+        votePayload: formData.votePayload,
         masterpassphrase: formData.passphrase,
         secondpassphrase: formData.secondpassphrase
       })

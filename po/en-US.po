@@ -506,6 +506,12 @@ msgstr "Passphrase is not corresponding to account"
 msgid "Passphrases are not secured with high standard. <br>\n              Use this feature only on safe computers and for accounts you can afford to lose balance."
 msgstr "Passphrases are not secured with high standard. <br>\nUse this feature only on safe computers and for accounts you can afford to lose balance."
 
+msgid "Payload"
+msgstr "Payload"
+
+msgid "Vote Payload"
+msgstr "Vote Payload"
+
 msgid "Passphrases deleted"
 msgstr "Passphrases deleted"
 
