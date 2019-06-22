@@ -192,7 +192,7 @@
                 class="font-bold mt-2 text-xl"
               >
                 {{ formatter_networkCurrency(wallet.balance, 2) }}
-                <!-- TODO display a +/- n ARK on recent transactions -->
+                <!-- TODO display a +/- n BPL on recent transactions -->
               </span>
             </div>
           </div>

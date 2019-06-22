@@ -307,8 +307,9 @@ export default {
       }
 
       const networkLookup = {
-        'ark.mainnet': 'mainnet',
-        'ark.devnet': 'devnet'
+        'bpl.mainnet': 'mainnet',
+        'bpl.devnet': 'devnet',
+        'bpl.alphanet': 'testnet'
       }
 
       const peers = await this._vm.$client.fetchPeers(networkLookup[network.id], getters['all']())

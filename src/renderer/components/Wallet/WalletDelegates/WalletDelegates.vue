@@ -131,7 +131,7 @@ export default {
   },
 
   mounted () {
-    this.queryParams.limit = this.session_network.constants.activeDelegates || 51 // Set default limit to amount of active delegates
+    this.queryParams.limit = this.session_network.constants.activeDelegates || 201 // Set default limit to amount of active delegates
     this.fetchDelegates()
   },
 

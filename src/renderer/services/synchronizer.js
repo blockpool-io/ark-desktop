@@ -14,8 +14,8 @@ import { announcements, fees, ledger, market, peer, wallets } from './synchroniz
  */
 export default class Synchronizer {
   get intervals () {
-    // ARK block production time
-    const block = 8000
+    // BPL block production time
+    const block = 15000
 
     const intervals = {
       longest: block * 300,

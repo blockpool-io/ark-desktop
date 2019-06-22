@@ -1,0 +1,64 @@
+{
+  "id": "bpl.alphanet",
+  "name": "BPL Alphanet",
+  "title": "BPL Alphanet",
+  "server": "http://169.62.192.23:9031",
+  "description": "The BPL Alphanet is used for validation of BPL v2 upgrade.",
+  "imagePath": "networks/bpl.alphanet.svg",
+  "apiVersion": 2,
+  "slip44": "1",
+  "market": {
+    "enabled": false,
+    "ticker": null
+  },
+  "feeStatistics": [
+    {
+      "type": 0,
+      "fees": {
+        "avgFee": 10000000,
+        "maxFee": 10000000,
+        "minFee": 10000000
+      }
+    },
+    {
+      "type": 1,
+      "fees": {
+        "avgFee": 500000000,
+        "maxFee": 500000000,
+        "minFee": 500000000
+      }
+    },
+    {
+      "type": 2,
+      "fees": {
+        "avgFee": 2500000000,
+        "maxFee": 2500000000,
+        "minFee": 2500000000
+      }
+    },
+    {
+      "type": 3,
+      "fees": {
+        "avgFee": 100000000,
+        "maxFee": 100000000,
+        "minFee": 100000000
+      }
+    }
+  ],
+  "constants": {
+    "activeDelegates": 201,
+    "epoch": "2019-06-05T22:27:10.506Z"
+  },
+  "vendorField": {
+    "maxLength": 255
+  },
+  "nethash": "4b71ce2bcee9133e2f825209e50a1e83636a1d5d99ac9b1be75683ab0fe1c549",
+  "explorer": "http://169.62.192.23:4200/",
+  "token": "BPL",
+  "subunit": "blocktoshi",
+  "symbol": "β",
+  "fractionDigits": 8,
+  "version": 30,
+  "wif": 170,
+  "knownWallets": {}
+}
