@@ -189,7 +189,7 @@ export default class ClientService {
    *
    * @param {Object} [query]
    * @param {Number} [query.page=1]
-   * @param {Number} [query.limit=51]
+   * @param {Number} [query.limit=201]
    * @param {String} [query.orderBy='rank:asc']
    * @return {Object[]}
    */

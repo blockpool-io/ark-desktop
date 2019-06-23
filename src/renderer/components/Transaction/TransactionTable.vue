@@ -238,7 +238,7 @@ export default {
       ]
     },
     numberOfActiveDelegates () {
-      return at(this, 'session_network.constants.activeDelegates') || 51
+      return at(this, 'session_network.constants.activeDelegates') || 201
     }
   },
 
