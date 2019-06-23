@@ -1,5 +1,5 @@
-import ApiClient from '@arkecosystem/client'
-import { crypto, transactionBuilder } from '@arkecosystem/crypto'
+import ApiClient from '@blockpool-io/client'
+import { crypto, transactionBuilder } from '@blockpool-io/crypto'
 import axios from 'axios'
 import { castArray, chunk, orderBy } from 'lodash'
 import dayjs from 'dayjs'
