@@ -58,7 +58,7 @@
   "subunit": "blocktoshi",
   "symbol": "β",
   "fractionDigits": 8,
-  "version": 30,
+  "version": 25,
   "wif": 170,
   "knownWallets": {}
 }
