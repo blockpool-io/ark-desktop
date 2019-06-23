@@ -6,7 +6,7 @@
   "description": "The BPL Alphanet is used for validation of BPL v2 upgrade.",
   "imagePath": "networks/bpl.alphanet.svg",
   "apiVersion": 2,
-  "slip44": "1",
+  "slip44": "111",
   "market": {
     "enabled": false,
     "ticker": null
