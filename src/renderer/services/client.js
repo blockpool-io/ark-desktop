@@ -224,11 +224,13 @@ export default class ClientService {
 
       totalCount = parseInt(data.totalCount)
     } else {
+      console.log('requesting')
       const { data } = await this.client.resource('delegates').all({
         page: options.page,
         limit: options.limit,
         orderBy: options.orderBy
       })
+      console.log(data)
       delegates = data.data
       totalCount = data.meta.totalCount
     }
