@@ -73,7 +73,7 @@ export default class ClientService {
    * @return {(Object|null)}
    */
   static async fetchPeerConfig (host, timeout = 3000) {
-    const walletApiHost = host.replace(/:\d+/, ':4040')
+    const walletApiHost = host // .replace(/:\d+/, ':4040')
     const endpoints = [
       `${walletApiHost}/config`,
       `${host}/config`,
