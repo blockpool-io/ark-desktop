@@ -1,10 +1,10 @@
 {
   "private": true,
   "name": "bpl-desktop-wallet",
-  "version": "2.4.1",
+  "version": "2.0.0-alpha",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ArkEcosystem/desktop-wallet.git"
+    "url": "git+https://github.com/blockpool-io/desktop-wallet.git"
   },
   "author": "Blockpool <support@blockpool.io>",
   "contributors": [
@@ -16,9 +16,9 @@
   "description": "Blockpool Desktop Wallet",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ArkEcosystem/desktop-wallet/issues"
+    "url": "https://github.com/blockpool-io/desktop-wallet/issues"
   },
-  "homepage": "https://github.com/ArkEcosystem/desktop-wallet#readme",
+  "homepage": "https://github.com/blockpool-io/desktop-wallet#readme",
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "node .electron-vue/build.js && electron-builder",
