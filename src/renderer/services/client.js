@@ -203,11 +203,13 @@ export default class ClientService {
     let delegates = []
 
     if (this.__version === 1) {
+      console.log('requesting v1 delegates')
       const { data } = await this.client.resource('delegates').all({
         offset: (options.page - 1) * options.limit,
         limit: options.limit,
         orderBy: options.orderBy
       })
+      console.log(data)
 
       delegates = data.delegates.map(delegate => {
         return {
@@ -224,7 +226,7 @@ export default class ClientService {
 
       totalCount = parseInt(data.totalCount)
     } else {
-      console.log('requesting')
+      console.log('requesting v2 delegates', options.page, options.limit, options.orderBy)
       const { data } = await this.client.resource('delegates').all({
         page: options.page,
         limit: options.limit,

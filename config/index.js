@@ -7,13 +7,13 @@ exports.APP = {
 }
 
 exports.NETWORKS = [
-  require('./networks/alphanet.json')
+  require('./networks/testnet.json')
   // require('./networks/mainnet.json'),
   // require('./networks/devnet.json')
 ]
 
 exports.PEERS = {
-  'bpl.alphanet': require('./peers/alphanet.json')
+  'bpl.testnet': require('./peers/testnet.json')
   // 'bpl.mainnet': require('./peers/mainnet.json'),
   // 'bpl.devnet': require('./peers/devnet.json')
 }

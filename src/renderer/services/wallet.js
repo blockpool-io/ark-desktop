@@ -1,7 +1,7 @@
 import bip39 from 'bip39'
 import { crypto, Message } from '@blockpool-io/crypto'
 // import { version as mainnetVersion } from '@config/networks/mainnet'
-import { version as mainnetVersion } from '@config/networks/alphanet'
+import { version as mainnetVersion } from '@config/networks/testnet'
 import axios from 'axios'
 
 export default class WalletService {

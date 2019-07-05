@@ -121,7 +121,7 @@ export default {
 
   methods: {
     getNetworks () {
-      const defaultNetworkIds = ['bpl.alphanet']
+      const defaultNetworkIds = ['bpl.testnet']
 
       this.networks = Object.values(this.$store.getters['network/all']).map(network => {
         return {
