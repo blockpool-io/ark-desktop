@@ -50,8 +50,8 @@
   "dependencies": {
     "@arkecosystem/ledger-transport": "^0.1.0",
     "@babel/runtime": "^7.2.0",
-    "@blockpool-io/client": "^2.0.0-pre.1",
-    "@blockpool-io/crypto": "^2.0.0-pre.1",
+    "@blockpool-io/client": "^2.0.0-alpha.1",
+    "@blockpool-io/crypto": "^2.0.0-pre.4",
     "@ledgerhq/hw-transport-node-hid": "^4.24.0",
     "about-window": "^1.12.1",
     "animate.css": "^3.7.0",
