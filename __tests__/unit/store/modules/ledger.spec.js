@@ -1,7 +1,7 @@
 import nock from 'nock'
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { crypto } from '@arkecosystem/crypto'
+import { crypto } from '@blockpool-io/crypto'
 import apiClient, { client as ClientService } from '@/plugins/api-client'
 import LedgerModule from '@/store/modules/ledger'
 import ledgerService from '@/services/ledger-service'

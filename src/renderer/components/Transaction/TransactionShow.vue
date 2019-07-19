@@ -247,10 +247,10 @@ export default {
 
   computed: {
     isWellConfirmed () {
-      return this.transaction.confirmations >= (this.numberOfActiveDelegates || 51)
+      return this.transaction.confirmations >= (this.numberOfActiveDelegates || 201)
     },
     numberOfActiveDelegates () {
-      return at(this, 'session_network.constants.activeDelegates') || 51
+      return at(this, 'session_network.constants.activeDelegates') || 201
     },
     votePublicKey () {
       if (this.transaction && this.transaction.asset && this.transaction.asset.votes) {

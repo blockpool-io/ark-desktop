@@ -1,5 +1,5 @@
-import ApiClient from '@arkecosystem/client'
-import { crypto, transactionBuilder } from '@arkecosystem/crypto'
+import ApiClient from '@blockpool-io/client'
+import { crypto, transactionBuilder } from '@blockpool-io/crypto'
 import axios from 'axios'
 import { castArray, chunk, orderBy } from 'lodash'
 import dayjs from 'dayjs'
@@ -74,7 +74,7 @@ export default class ClientService {
    * @return {(Object|null)}
    */
   static async fetchPeerConfig (host, timeout = 3000) {
-    const walletApiHost = host.replace(/:\d+/, ':4040')
+    const walletApiHost = host // .replace(/:\d+/, ':4040')
     const endpoints = [
       `${walletApiHost}/config`,
       `${host}/config`,
@@ -190,7 +190,7 @@ export default class ClientService {
    *
    * @param {Object} [query]
    * @param {Number} [query.page=1]
-   * @param {Number} [query.limit=51]
+   * @param {Number} [query.limit=201]
    * @param {String} [query.orderBy='rank:asc']
    * @return {Object[]}
    */
@@ -204,11 +204,13 @@ export default class ClientService {
     let delegates = []
 
     if (this.__version === 1) {
+      console.log('requesting v1 delegates')
       const { data } = await this.client.resource('delegates').all({
         offset: (options.page - 1) * options.limit,
         limit: options.limit,
         orderBy: options.orderBy
       })
+      console.log(data)
 
       delegates = data.delegates.map(delegate => {
         return {
@@ -225,11 +227,13 @@ export default class ClientService {
 
       totalCount = parseInt(data.totalCount)
     } else {
+      console.log('requesting v2 delegates', options.page, options.limit, options.orderBy)
       const { data } = await this.client.resource('delegates').all({
         page: options.page,
         limit: options.limit,
         orderBy: options.orderBy
       })
+      console.log(data)
       delegates = data.data
       totalCount = data.meta.totalCount
     }

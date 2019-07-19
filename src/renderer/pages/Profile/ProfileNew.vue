@@ -324,7 +324,7 @@ export default {
    * Reuse the settings of the current profile every time the page is created
    */
   created () {
-    this.selectNetwork(this.defaultNetworks.find(network => network.id === 'ark.mainnet'))
+    this.selectNetwork(this.defaultNetworks.find(network => network.id === 'bpl.testnet'))
     this.schema.background = this.background
     this.schema.bip39Language = this.bip39Language
     this.schema.currency = this.currency
