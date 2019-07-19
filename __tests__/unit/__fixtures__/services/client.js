@@ -52,7 +52,7 @@ const staticFeeResponses = {
       send: 10000000,
       vote: 100000000,
       secondsignature: 500000000,
-      delegate: 2500000000,
+      delegate: 1000000000,
       multisignature: 500000000
     },
     success: true
@@ -62,7 +62,7 @@ const staticFeeResponses = {
     data: {
       transfer: 10000000,
       secondSignature: 500000000,
-      delegateRegistration: 2500000000,
+      delegateRegistration: 1000000000,
       vote: 100000000,
       multiSignature: 500000000,
       ipfs: 0,

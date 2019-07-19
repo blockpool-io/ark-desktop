@@ -354,7 +354,7 @@ export default {
       // Default advanced values: ?
       this.form.wif = this.getStringOrDefault(this.network.wif, '170')
       this.form.slip44 = this.getStringOrDefault(this.network.slip44, '1')
-      this.form.activeDelegates = this.getStringOrDefault(this.network.activeDelegates, '51')
+      this.form.activeDelegates = this.getStringOrDefault(this.network.activeDelegates, '201')
       this.form.ticker = this.network.market.ticker || ''
 
       this.showFull = true
@@ -493,7 +493,7 @@ export default {
         // Default values during the core API transition stage
         wif: '170',
         slip44: '1',
-        activeDelegates: '51'
+        activeDelegates: '201'
       }
 
       const fetchAndFill = async (version, callback = null) => {

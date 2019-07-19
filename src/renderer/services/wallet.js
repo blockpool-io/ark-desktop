@@ -1,6 +1,7 @@
 import bip39 from 'bip39'
-import { crypto, Message } from '@arkecosystem/crypto'
-import { version as mainnetVersion } from '@config/networks/mainnet'
+import { crypto, Message } from '@blockpool-io/crypto'
+// import { version as mainnetVersion } from '@config/networks/mainnet'
+import { version as mainnetVersion } from '@config/networks/testnet'
 import axios from 'axios'
 
 export default class WalletService {
@@ -148,7 +149,7 @@ export default class WalletService {
       errors.push({ type: 'empty' })
     } else if (username.length > 20) {
       errors.push({ type: 'maxLength' })
-    // Regex from `@arkecosystem/crypto`
+    // Regex from `@blockpool-io/crypto`
     } else if (!username.match(/^[a-z0-9!@$&_.]+$/)) {
       errors.push({ type: 'invalidFormat' })
     }

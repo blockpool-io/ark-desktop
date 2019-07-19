@@ -91,7 +91,7 @@ export default {
     async load ({ dispatch, rootGetters }) {
       const network = rootGetters['session/network']
       const delegates = []
-      const limit = this._vm.$client.version === 1 ? (network.constants.activeDelegates || 51) : 100
+      const limit = this._vm.$client.version === 1 ? (network.constants.activeDelegates || 201) : 100
       let page = 1
       let totalCount = null
       while (!totalCount || delegates.length < totalCount) {
