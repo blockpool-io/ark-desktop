@@ -18,7 +18,7 @@ export default {
 
   data: () => ({
     text: '',
-    url: 'https://ark.io'
+    url: 'https://blockpool.io'
   }),
 
   created () {

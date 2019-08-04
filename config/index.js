@@ -2,22 +2,24 @@ const os = require('os')
 const path = require('path')
 
 exports.APP = {
-  website: 'https://ark.io',
+  website: 'https://blockpool.io',
   transactionExpiryMinutes: 45
 }
 
 exports.NETWORKS = [
-  require('./networks/mainnet.json'),
-  require('./networks/devnet.json')
+  require('./networks/testnet.json')
+  // require('./networks/mainnet.json'),
+  // require('./networks/devnet.json')
 ]
 
 exports.PEERS = {
-  'ark.mainnet': require('./peers/mainnet.json'),
-  'ark.devnet': require('./peers/devnet.json')
+  'bpl.testnet': require('./peers/testnet.json')
+  // 'bpl.mainnet': require('./peers/mainnet.json'),
+  // 'bpl.devnet': require('./peers/devnet.json')
 }
 
 exports.ANNOUNCEMENTS = {
-  rssUrl: 'https://blog.ark.io/feed'
+  rssUrl: 'https://www.blockpool.io/blogs/feed'
 }
 
 exports.VENDOR_FIELD = {
@@ -98,7 +100,7 @@ exports.MARKET = {
 
 exports.PLUGINS = {
   discoverUrl: 'https://github.com/ark-ecosystem-desktop-plugins',
-  path: path.resolve(os.homedir(), '.ark-desktop/plugins')
+  path: path.resolve(os.homedir(), '.bpl-desktop/plugins')
 }
 
 exports.THEMES = [
@@ -116,7 +118,7 @@ exports.V1 = {
   fees: [
     0.1 * 1e8, // Transfer
     5 * 1e8, // Second signautre
-    25 * 1e8, // Delegate registration
+    10 * 1e8, // Delegate registration
     1 * 1e8, // Vote
     5 * 1e8, // Multisignature
     0 * 1e8, // IPFS (not supported yet)

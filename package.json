@@ -1,24 +1,24 @@
 {
   "private": true,
-  "name": "ark-desktop-wallet",
-  "version": "2.5.1",
+  "name": "bpl-desktop-wallet",
+  "version": "3.0.0-pre.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ArkEcosystem/desktop-wallet.git"
+    "url": "git+https://github.com/blockpool-io/BPL-desktop.git"
   },
-  "author": "ArkEcosystem <info@ark.io>",
+  "author": "Blockpool <support@blockpool.io>",
   "contributors": [
     "Alex Barnsley <alex@ark.io>",
     "ItsANameToo <itsanametoo@protonmail.com>",
     "Juan A. Martín <juan@ark.io>",
     "Lúcio Rubens <lucio@ark.io>"
   ],
-  "description": "Ark Ecosystem Desktop Wallet",
+  "description": "Blockpool Desktop Wallet",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ArkEcosystem/desktop-wallet/issues"
+    "url": "https://github.com/blockpool-io/BPL-desktop/issues"
   },
-  "homepage": "https://github.com/ArkEcosystem/desktop-wallet#readme",
+  "homepage": "https://github.com/blockpool-io/BPL-desktop#readme",
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "node .electron-vue/build.js && electron-builder",
@@ -90,6 +90,7 @@
     "vue-i18n": "^8.9.0",
     "vue-qrcode-reader": "^1.4.1",
     "vue-router": "^3.0.2",
+    "vue-runtime-helpers": "^1.0.1",
     "vue-spinner": "^1.0.3",
     "vue-vuelidate-jsonschema": "^0.13.4",
     "vuelidate": "^0.7.4",
@@ -167,14 +168,14 @@
     "webpack-hot-middleware": "^2.25.0"
   },
   "build": {
-    "productName": "Ark Desktop Wallet",
-    "appId": "io.ark.desktop-wallet",
+    "productName": "Blockpool Desktop Wallet",
+    "appId": "io.blockpool.desktop-wallet",
     "compression": "maximum",
     "artifactName": "${name}-${os}-${arch}-${version}.${ext}",
     "protocols": {
-      "name": "Ark URI scheme",
+      "name": "BPL URI scheme",
       "schemes": [
-        "ark"
+        "bpl"
       ],
       "role": "Viewer"
     },
@@ -194,7 +195,7 @@
     },
     "linux": {
       "category": "Utility",
-      "executableName": "ark-desktop-wallet",
+      "executableName": "bpl-desktop-wallet",
       "icon": "build/icons",
       "target": [
         "AppImage",
@@ -202,7 +203,7 @@
         "tar.gz"
       ],
       "desktop": {
-        "MimeType": "x-scheme-handler/ark;"
+        "MimeType": "x-scheme-handler/bpl;"
       }
     },
     "deb": {

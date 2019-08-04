@@ -1,5 +1,5 @@
 import { isEmpty, random, shuffle } from 'lodash'
-import { PeerDiscovery } from '@arkecosystem/peers'
+import { PeerDiscovery } from '@blockpool-io/peers'
 import ClientService from '@/services/client'
 import config from '@config'
 import i18n from '@/i18n'
@@ -277,8 +277,9 @@ export default {
       }
 
       const networkLookup = {
-        'ark.mainnet': 'mainnet',
-        'ark.devnet': 'devnet'
+        // 'bpl.mainnet': 'mainnet',
+        // 'bpl.devnet': 'devnet',
+        'bpl.testnet': 'testnet'
       }
 
       let peerDiscovery = null

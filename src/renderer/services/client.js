@@ -1,5 +1,5 @@
-import { Connection } from '@arkecosystem/client'
-import { Identities, Transactions } from '@arkecosystem/crypto'
+import { Connection } from '@blockpool-io/client'
+import { Identities, Transactions } from '@blockpool-io/crypto'
 import { castArray, chunk, orderBy } from 'lodash'
 import got from 'got'
 import moment from 'moment'
@@ -62,7 +62,7 @@ export default class ClientService {
    * @return {(Object|null)}
    */
   static async fetchPeerConfig (host, timeout = 3000) {
-    const walletApiHost = host.replace(/:\d+/, ':4040')
+    const walletApiHost = host // .replace(/:\d+/, ':4040')
     const endpoints = [
       `${walletApiHost}/config`,
       `${host}/config`,
@@ -158,7 +158,7 @@ export default class ClientService {
    *
    * @param {Object} [query]
    * @param {Number} [query.page=1]
-   * @param {Number} [query.limit=51]
+   * @param {Number} [query.limit=201]
    * @param {String} [query.orderBy='rank:asc']
    * @return {Object[]}
    */

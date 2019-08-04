@@ -21,7 +21,7 @@ const { VueLoaderPlugin } = require('vue-loader')
  * that provide pure *.vue files that need compiling
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/webpack-configurations.html#white-listing-externals
  */
-let whiteListedModules = ['vue', '@arkecosystem/client', 'got']
+let whiteListedModules = ['vue', '@blockpool-io/client', 'got']
 
 let rendererConfig = {
   devtool: '#cheap-module-eval-source-map',
