@@ -277,9 +277,9 @@ export default {
       }
 
       const networkLookup = {
-        // 'bpl.mainnet': 'mainnet',
+        'bpl.mainnet': 'mainnet'
         // 'bpl.devnet': 'devnet',
-        'bpl.testnet': 'testnet'
+        // 'bpl.testnet': 'testnet'
       }
 
       let peerDiscovery = null

@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "bpl-desktop-wallet",
-  "version": "3.0.0-pre.0",
+  "version": "3.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/blockpool-io/BPL-desktop.git"
