@@ -89,7 +89,7 @@ export default {
     totalCount: 0,
     queryParams: {
       page: 1,
-      limit: 201,
+      limit: 100,
       sort: {
         field: 'rank',
         type: 'asc'
