@@ -173,7 +173,7 @@ export default {
         networkId = profile.networkId
       }
 
-      let currentPeer = state.current[networkId]
+      const currentPeer = state.current[networkId]
       if (isEmpty(currentPeer)) {
         return false
       }
@@ -384,7 +384,7 @@ export default {
         throw new Error('Not connected to peer')
       }
 
-      let networkConfig = await ClientService.fetchNetworkConfig(getBaseUrl(peer))
+      const networkConfig = await ClientService.fetchNetworkConfig(getBaseUrl(peer))
       if (networkConfig.nethash !== rootGetters['session/network'].nethash) {
         throw new Error('Wrong network')
       }
@@ -474,7 +474,7 @@ export default {
         host = ip
       }
       let baseUrl = `${host}:${port}`
-      let schemeUrl = host.match(/^(https?:\/\/)+(.+)$/)
+      const schemeUrl = host.match(/^(https?:\/\/)+(.+)$/)
       if (!schemeUrl) {
         baseUrl = `http://${baseUrl}`
       }
