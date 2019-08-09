@@ -26,7 +26,7 @@ jest.mock('@/store', () => ({
       const fees = [
         0.1 * 1e8,
         5 * 1e8,
-        25 * 1e8,
+        10 * 1e8,
         1 * 1e8
       ]
 
@@ -489,10 +489,10 @@ describe('Services > Client', () => {
       })
     })
 
-    describe('when the fee is smaller or equal to V1 fee (25)', () => {
+    describe('when the fee is smaller or equal to V1 fee (10)', () => {
       it('should not throw an Error', async () => {
-        expect(await errorCapturer(client.buildDelegateRegistration({ fee: 25 * 1e8 }))).not.toThrow(/fee/)
-        expect(await errorCapturer(client.buildDelegateRegistration({ fee: 12.09 * 1e8 }))).not.toThrow(/fee/)
+        expect(await errorCapturer(client.buildDelegateRegistration({ fee: 10 * 1e8 }))).not.toThrow(/fee/)
+        expect(await errorCapturer(client.buildDelegateRegistration({ fee: 8.09 * 1e8 }))).not.toThrow(/fee/)
       })
     })
   })

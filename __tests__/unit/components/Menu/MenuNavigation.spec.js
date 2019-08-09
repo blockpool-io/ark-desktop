@@ -7,7 +7,7 @@ describe('MenuNavigation', () => {
   beforeEach(() => {
     wrapper = mount(MenuNavigationItem, {
       provide: {
-        switchToId: jest.fn()
+        switchToItem: jest.fn()
       },
       propsData: {
         id: 'test'
