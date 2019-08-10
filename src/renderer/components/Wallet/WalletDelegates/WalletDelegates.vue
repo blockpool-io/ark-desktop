@@ -35,7 +35,7 @@
       :total-rows="totalCount"
       :no-data-message="$t('TABLE.NO_DELEGATES')"
       :per-page="queryParams.limit"
-      :per-page-dropdown="[25, 201]"
+      :per-page-dropdown="[25, 100]"
       class="WalletDelegates__table"
       @on-row-click="onRowClick"
       @on-per-page-change="onPerPageChange"
@@ -131,7 +131,7 @@ export default {
   },
 
   mounted () {
-    this.queryParams.limit = this.session_network.constants.activeDelegates || 201 // Set default limit to amount of active delegates
+    this.queryParams.limit = 100 // Math.floor((this.session_network.constants.activeDelegates || 201), 100) // Set default limit to amount of active delegates
     this.fetchDelegates()
   },
 

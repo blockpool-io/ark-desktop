@@ -158,14 +158,14 @@ export default class ClientService {
    *
    * @param {Object} [query]
    * @param {Number} [query.page=1]
-   * @param {Number} [query.limit=201]
+   * @param {Number} [query.limit=100]
    * @param {String} [query.orderBy='rank:asc']
    * @return {Object[]}
    */
   async fetchDelegates (options = {}) {
     const network = store.getters['session/network']
     options.page || (options.page = 1)
-    options.limit || (options.limit = network.constants.activeDelegates)
+    options.limit || (options.limit = Math.floor(network.constants.activeDelegates, 100))
     options.orderBy || (options.orderBy = 'rank:asc')
 
     const { body } = await this.client.api('delegates').all({
