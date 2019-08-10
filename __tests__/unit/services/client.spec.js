@@ -26,7 +26,7 @@ jest.mock('@/store', () => ({
       const fees = [
         0.1 * 1e8,
         5 * 1e8,
-        25 * 1e8,
+        10 * 1e8,
         1 * 1e8
       ]
 
@@ -64,7 +64,7 @@ describe('Services > Client', () => {
       balance: '1202',
       publicKey: 'public key'
     }
-    let wallet = {
+    const wallet = {
       body: {
         data: {
           ...data,
@@ -73,7 +73,7 @@ describe('Services > Client', () => {
         }
       }
     }
-    let account = {
+    const account = {
       data: {
         success: true,
         account: {
@@ -128,7 +128,7 @@ describe('Services > Client', () => {
       }
     ]
     const walletAddresses = ['address1', 'address2']
-    let walletsResponse = {
+    const walletsResponse = {
       body: {
         data: [
           {
@@ -156,8 +156,8 @@ describe('Services > Client', () => {
       }
     }
 
-    let getWalletEndpoint = jest.fn(generateWalletResponse)
-    let searchWalletEndpoint = jest.fn(() => walletsResponse)
+    const getWalletEndpoint = jest.fn(generateWalletResponse)
+    const searchWalletEndpoint = jest.fn(() => walletsResponse)
     beforeEach(() => {
       const resource = resource => {
         if (resource === 'wallets') {
@@ -489,10 +489,10 @@ describe('Services > Client', () => {
       })
     })
 
-    describe('when the fee is smaller or equal to V1 fee (25)', () => {
+    describe('when the fee is smaller or equal to V1 fee (10)', () => {
       it('should not throw an Error', async () => {
-        expect(await errorCapturer(client.buildDelegateRegistration({ fee: 25 * 1e8 }))).not.toThrow(/fee/)
-        expect(await errorCapturer(client.buildDelegateRegistration({ fee: 12.09 * 1e8 }))).not.toThrow(/fee/)
+        expect(await errorCapturer(client.buildDelegateRegistration({ fee: 10 * 1e8 }))).not.toThrow(/fee/)
+        expect(await errorCapturer(client.buildDelegateRegistration({ fee: 8.09 * 1e8 }))).not.toThrow(/fee/)
       })
     })
   })

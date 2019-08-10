@@ -14,7 +14,9 @@ const mocks = {
     getters: {
       'session/currency': 'USD'
     }
-  }
+  },
+  isExpanded: true,
+  period: '5'
 }
 
 describe('MarketChart', () => {

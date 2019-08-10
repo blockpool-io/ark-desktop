@@ -18,7 +18,7 @@ ClientService.host = 'http://127.0.0.1'
 let ledgerNameByAddress = () => null
 let ledgerCache = false
 const nethash = '2a44f340d76ffc3df204c5f38cd355b7496c9065a1ade2ef92071436bd72e867'
-let store = new Vuex.Store({
+const store = new Vuex.Store({
   modules: {
     ledger: LedgerModule,
     session: {
@@ -92,7 +92,7 @@ describe('ledger store module', () => {
   describe('getWallet', () => {
     it('should return address and publicKey', async () => {
       expect(await store.dispatch('ledger/getWallet', 1)).toEqual({
-        address: 'DLWeBuwSBFYtUFj8kFB8CFswfvN2ht3yKn',
+        address: 'BKpdGNSzdMEWP62hd9WXmdX1XQ5K6E6bCH',
         publicKey: '0278a28d0eac9916ef46613d9dbac706acc218e64864d4b4c1fcb0c759b6205b2b'
       })
     })

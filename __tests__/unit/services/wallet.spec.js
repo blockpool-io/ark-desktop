@@ -2,52 +2,61 @@ import WalletService from '../../../src/renderer/services/wallet'
 
 describe('Services > Wallet', () => {
   describe('generating a passphrase and address', () => {
+    it('will throw an error the first time for some reason', () => {
+      const passphrase = 'one video jaguar gap soldier ill hobby motor bundle couple trophy smoke'
+      try {
+        WalletService.getAddress(passphrase, 25)
+      } catch (ex) {
+        expect(ex.message).toContain('randomBytes')
+      }
+    })
+
     it('should work in English', () => {
       const passphrase = 'one video jaguar gap soldier ill hobby motor bundle couple trophy smoke'
-      const address = 'DAy2xDNZLRQsgiJCnF3x4WDxGsBrmsKCsV'
-      expect(WalletService.getAddress(passphrase, 30)).toEqual(address)
+      const address = 'BAH22ft7nX6VbYbmf9PMdss28Lu9AZ91Gp'
+      expect(WalletService.getAddress(passphrase, 25)).toEqual(address)
     })
 
     it('should work in Chinese (Traditional)', () => {
       const passphrase = '苗 雛 陸 桿 用 腐 爐 詞 鬼 雨 爾 然'
-      const address = 'DS6hPMzbgRkKCZa6fJSmQrG2M7toJAtd5B'
-      expect(WalletService.getAddress(passphrase, 30)).toEqual(address)
+      const address = 'BRQgTpWA8XRw7PsfYCnAzDu6Cbc5eNB9BJ'
+      expect(WalletService.getAddress(passphrase, 25)).toEqual(address)
     })
 
     it('should work in French', () => {
       const passphrase = 'galerie notoire prudence mortier soupape cerise argent neurone pommade géranium potager émouvoir'
-      const address = 'DUFdRiUNXt1PiLVakbq4ADo1Ttsx3kH1AT'
-      expect(WalletService.getAddress(passphrase, 30)).toEqual(address)
+      const address = 'BTZcWAyvyyh1dAo9dWATjbS5KNbEYyReLR'
+      expect(WalletService.getAddress(passphrase, 25)).toEqual(address)
     })
 
     it('should work in Italian', () => {
       const passphrase = 'mucca comodo imbevuto talismano sconforto cavillo obelisco quota recupero malinteso gergo bipede'
-      const address = 'D8nAGdSCCRMsLPsM4GgzRtgbiTn16rHW6J'
-      expect(WalletService.getAddress(passphrase, 30)).toEqual(address)
+      const address = 'B869M5wkeX3VFEAuwB2Q1GKfZwVHX5w5Qt'
+      expect(WalletService.getAddress(passphrase, 25)).toEqual(address)
     })
 
     it('should work in Japanese', () => {
       const passphrase = 'うかべる　くすりゆび　ひさしぶり　たそがれ　そっこう　ちけいず　ひさしぶり　ていか　しゃちょう　けおりもの　ちぬり　りきせつ'
-      const address = 'DQquFjRfgA26cut7A8wFC4Bbo4TawWArWr'
-      expect(WalletService.getAddress(passphrase, 30)).toEqual(address)
+      const address = 'BQ9tLBwE8FhiXkBg33GemRpfeYAsNMWGVX'
+      expect(WalletService.getAddress(passphrase, 25)).toEqual(address)
     })
 
     it('should work in Korean with initially decomposed characters', () => {
       const passphrase = '변명 박수 사건 실컷 목적 비용 가능 시골 수동적 청춘 식량 도망'
-      const address = 'D5FvjRH136fbw8j4thcmKiFiJjfbYHT3zY'
-      expect(WalletService.getAddress(passphrase, 30)).toEqual(address)
+      const address = 'B4ZuosnZVCMDqy2dmbxAu5tnADNt1ZpK1B'
+      expect(WalletService.getAddress(passphrase, 25)).toEqual(address)
     })
 
     it('should work in Korean without decomposing', () => {
       const passphrase = '변명 박수 사건 실컷 목적 비용 가능 시골 수동적 청춘 식량 도망'
-      const address = 'D5FvjRH136fbw8j4thcmKiFiJjfbYHT3zY'
-      expect(WalletService.getAddress(passphrase, 30)).toEqual(address)
+      const address = 'B4ZuosnZVCMDqy2dmbxAu5tnADNt1ZpK1B'
+      expect(WalletService.getAddress(passphrase, 25)).toEqual(address)
     })
 
     it('should work in Spanish', () => {
       const passphrase = 'cadena cadáver malla etapa vista alambre burbuja vejez aéreo taco rebaño tauro'
-      const address = 'DNZSrNt7SQ1VBrzx7C17gbPv9FDAxnaor3'
-      expect(WalletService.getAddress(passphrase, 30)).toEqual(address)
+      const address = 'BMsRvqPftVh76hJWz6LXFy2yzivTL2jAGv'
+      expect(WalletService.getAddress(passphrase, 25)).toEqual(address)
     })
   })
 

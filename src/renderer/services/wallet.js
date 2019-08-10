@@ -1,6 +1,7 @@
 import bip39 from 'bip39'
 import { Crypto, Identities } from '@blockpool-io/crypto'
 import { version as mainnetVersion } from '@config/networks/mainnet'
+import store from '@/store'
 import got from 'got'
 
 export default class WalletService {
@@ -141,13 +142,15 @@ export default class WalletService {
    * @return {Object} { errors: Array, passes: Boolean }
    */
   static validateUsername (username) {
-    let errors = []
+    const errors = []
 
     if (username.length < 1) {
       errors.push({ type: 'empty' })
     } else if (username.length > 20) {
       errors.push({ type: 'maxLength' })
-    // Regex from `@blockpool-io/crypto`
+    } else if (store.getters['delegate/byUsername'](username)) {
+      errors.push({ type: 'exists' })
+    // Regex from `@arkecosystem/crypto`
     } else if (!username.match(/^[a-z0-9!@$&_.]+$/)) {
       errors.push({ type: 'invalidFormat' })
     }

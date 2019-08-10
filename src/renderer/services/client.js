@@ -158,14 +158,14 @@ export default class ClientService {
    *
    * @param {Object} [query]
    * @param {Number} [query.page=1]
-   * @param {Number} [query.limit=201]
+   * @param {Number} [query.limit=100]
    * @param {String} [query.orderBy='rank:asc']
    * @return {Object[]}
    */
   async fetchDelegates (options = {}) {
     const network = store.getters['session/network']
     options.page || (options.page = 1)
-    options.limit || (options.limit = network.constants.activeDelegates)
+    options.limit || (options.limit = Math.floor(network.constants.activeDelegates, 100))
     options.orderBy || (options.orderBy = 'rank:asc')
 
     const { body } = await this.client.api('delegates').all({
@@ -307,7 +307,7 @@ export default class ClientService {
   async fetchTransactionsForWallets (addresses, options = {}) {
     options = options || {}
 
-    let walletData = {}
+    const walletData = {}
     if (this.isCapable('2.1.0')) {
       let transactions = []
       let hadFailure = false
@@ -403,7 +403,7 @@ export default class ClientService {
    * @return {Object[]}
    */
   async fetchWallets (addresses) {
-    let walletData = []
+    const walletData = []
 
     if (this.isCapable('2.1.0')) {
       for (const addressChunk of chunk(addresses, 20)) {
@@ -661,8 +661,8 @@ export default class ClientService {
 
     let failedBroadcast = false
     if (broadcast) {
-      let txs = []
-      let peers = store.getters['peer/broadcastPeers']()
+      const txs = []
+      const peers = store.getters['peer/broadcastPeers']()
       if (peers && peers.length) {
         for (let i = 0; i < peers.length; i++) {
           try {
