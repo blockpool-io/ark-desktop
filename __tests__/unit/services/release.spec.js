@@ -4,8 +4,8 @@ import errorCapturer from '../__utils__/error-capturer'
 import release from '@/services/release'
 
 const githubApiBase = 'https://api.github.com'
-const releaseApiUrl = '/repos/ArkEcosystem/desktop-wallet/releases/latest'
-const releaseUrl = 'https://github.com/ArkEcosystem/desktop-wallet/releases/latest'
+const releaseApiUrl = '/repos/blockpool-io/BPL-desktop/releases/latest'
+const releaseUrl = 'https://github.com/blockpool-io/BPL-desktop/releases/latest'
 
 beforeEach(() => {
   nock.cleanAll()
@@ -38,6 +38,7 @@ describe('Services > Release', () => {
     describe('when the request or parsing fails', () => {
       it('should throw the Error', async () => {
         nock(githubApiBase)
+          .persist()
           .get(releaseApiUrl)
           .reply(500)
 

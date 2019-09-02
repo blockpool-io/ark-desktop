@@ -6,6 +6,8 @@
 [![Latest Version](https://badgen.now.sh/github/release/blockpool-io/desktop-wallet)](https://github.com/ArkEcosystem/desktop-wallet/releases)
 [![License: MIT](https://badgen.now.sh/badge/license/MIT/green)](https://opensource.org/licenses/MIT)
 
+> Lead Maintainer: [Alex Barnsley](https://github.com/alexbarnsley)
+
 ## Download
 [Latest Release](https://github.com/blockpool-io/bpl-desktop/releases)
 
@@ -109,11 +111,7 @@ If you discover a security vulnerability within this project, please send an e-m
 
 ## Credits
 
- - [Alex Barnsley](https://github.com/alexbarnsley)
- - [ItsANameToo](https://github.com/ItsANameToo)
- - [Juan A. Martín](https://github.com/j-a-m-l)
- - [Lúcio Rubens](https://github.com/luciorubeens)
- - [All Contributors](../../contributors)
+This project exists thanks to all the people who [contribute](../../contributors).
 
 ## License
 
