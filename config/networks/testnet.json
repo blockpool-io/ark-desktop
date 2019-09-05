@@ -54,7 +54,7 @@
   },
   "nethash": "ff8efb69464f22e16d099c36d1160709a22be9d2f626228d3083987bcb692007",
   "explorer": "https://explorer.testnet.blockpool.io",
-  "token": "BPL",
+  "token": "tBPL",
   "subunit": "blocktoshi",
   "symbol": "tβ",
   "fractionDigits": 8,
