@@ -24,6 +24,10 @@ describe('Mixins > Qr', () => {
       expect(wrapper.vm.qr_getAddress('{"a": "BLVM4Zciodj5LQxN427C84zRLWd9EmBmix"}')).toEqual('BLVM4Zciodj5LQxN427C84zRLWd9EmBmix')
     })
 
+    it('should return an address from a json object with the "address" property', () => {
+      expect(wrapper.vm.qr_getAddress('{"address": "AewxfHQobSc49a4radHp74JZCGP8LRe4xA"}')).toEqual('AewxfHQobSc49a4radHp74JZCGP8LRe4xA')
+    })
+
     it('should return an address from string', () => {
       expect(wrapper.vm.qr_getAddress('BLVM4Zciodj5LQxN427C84zRLWd9EmBmix')).toEqual('BLVM4Zciodj5LQxN427C84zRLWd9EmBmix')
     })

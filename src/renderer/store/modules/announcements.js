@@ -23,6 +23,10 @@ export default {
   mutations: {
     SAVE_ANNOUNCEMENTS (state, items) {
       const announcementsFromFeedItems = items.map(item => Announcement.deserialize(item))
+        .map(i => ({
+          ...i,
+          guid: i.guid || i.url
+        }))
 
       state.announcements = unionBy(state.announcements, announcementsFromFeedItems, 'guid')
     },
