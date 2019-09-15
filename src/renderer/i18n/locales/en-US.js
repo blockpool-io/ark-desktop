@@ -2,8 +2,8 @@ export default {
   COMMON: {
     ADDRESS: 'Address',
     ALL: 'All',
-    APP_NAME: 'BPL Desktop Wallet',
-    APP_NAME_SHORT: 'BPL Desktop',
+    APP_NAME: 'Blockpool Desktop Wallet',
+    APP_NAME_SHORT: 'Blockpool Desktop',
     APPEARANCE: 'Appearance',
     AVATAR: 'Avatar',
     BACK: 'Back',
@@ -76,22 +76,22 @@ export default {
     RESPONSIBILITY: {
       TITLE: 'Your Responsibility',
       STORAGE: {
-        EXPLANATION: 'The {PASSPHRASE} of each wallet address is able to sign transactions and move funds. This means if your computer dies but you have your passphrase, you can still access your funds. The BPL Desktop Wallet has an additional feature that lets you set an {ENCRYPTED} as well, for easier management. If your computer dies, you cannot use the encrypted password to access your funds from a different machine. {NEED}.',
+        EXPLANATION: 'The {PASSPHRASE} of each wallet address is able to sign transactions and move funds. This means if your computer dies but you have your passphrase, you can still access your funds. The Blockpool Desktop Wallet has an additional feature that lets you set an {ENCRYPTED} as well, for easier management. If your computer dies, you cannot use the encrypted password to access your funds from a different machine. {NEED}.',
         PASSPHRASE: 'passphrase',
         ENCRYPTED: 'encrypted password',
         NEED: 'You will need the passphrase'
       },
       BACKUP: {
         ALWAYS: 'Always backup your passphrase and keep it in a safe place.',
-        OPTIONS: 'You can write it down on thick paper and store multiple copies in secure locations. You can also store it on an encrypted flash drive. Alternatively, you can use a Ledger Nano S USB hardware device, available at Ledger.com, to store and access your funds and the BPL Desktop Wallet. You can plug your Ledger Nano S into your computer and access the BPL blockchain without needing to enter your passphrase.'
+        OPTIONS: 'You can write it down on thick paper and store multiple copies in secure locations. You can also store it on an encrypted flash drive. Alternatively, you can use a Ledger Nano S USB hardware device, available at Ledger.com, to store and access your funds and the Blockpool Desktop Wallet. You can plug your Ledger Nano S into your computer and access the BPL blockchain without needing to enter your passphrase.'
       },
       REMEMBER: 'Remember, anyone who has your passphrase can access your funds. Never share your account with anyone and avoid storing it in locations that are susceptible to hacks, such as the Cloud.'
     },
     TURN: {
       TITLE: 'Your Turn',
-      KNOWLEDGE: 'Now, armed with the knowledge of how important it is to keep your passphrases safe, you are ready to claim your financial autonomy with the BPL Desktop Wallet.',
+      KNOWLEDGE: 'Now, armed with the knowledge of how important it is to keep your passphrases safe, you are ready to claim your financial autonomy with the Blockpool Desktop Wallet.',
       SUPPORT: 'Blockpool is an open-source ecosystem and if you need assistance, the Blockpool community and team is here to help. Create a post on reddit.blockpool.io, or join the real-time chat system at discord.blockpool.io.',
-      CONCLUSION: 'Everyone here on the blockpool.io team hopes you enjoy using the BPL Desktop Wallet to participate in the blockchain revolution!'
+      CONCLUSION: 'Everyone here on the blockpool.io team hopes you enjoy using the Blockpool Desktop Wallet to participate in the blockchain revolution!'
     }
   },
 
@@ -612,7 +612,7 @@ export default {
 
     WALLET_EXCHANGE: {
       CHANGELLY_TERMS: {
-        TITLE: 'Purchase {ticker} directly within BPL Desktop Wallet with our Changelly integration',
+        TITLE: 'Purchase {ticker} directly within Blockpool Desktop Wallet with our Changelly integration',
         CONTENT: 'Changelly lets you exchange other cryptocurrencies into {ticker} and has an option to buy {ticker} directly with your credit or debit cards.',
         CONFIRMATION: 'I have read and I agree with the {terms} and the {privacy} from Changelly. By clicking {button}, I acknowledge and understand that my transaction may trigger AML/KYC verification according to Changelly {kyc}.',
         TERMS_OF_USE: 'terms of use',

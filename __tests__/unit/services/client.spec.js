@@ -78,7 +78,7 @@ describe('Services > Client', () => {
   const fees = [
     0.1 * 1e8,
     5 * 1e8,
-    25 * 1e8,
+    10 * 1e8,
     1 * 1e8
   ]
 
@@ -527,7 +527,7 @@ describe('Services > Client', () => {
       })
     })
 
-    describe('when the fee is smaller or equal to the static fee (25)', () => {
+    describe('when the fee is smaller or equal to the static fee (10)', () => {
       it('should not throw an Error', async () => {
         expect(await errorCapturer(client.buildDelegateRegistration({ fee: new BigNumber(fees[2]) }))).not.toThrow(/fee/)
         expect(await errorCapturer(client.buildDelegateRegistration({ fee: new BigNumber(fees[2] - 1) }))).not.toThrow(/fee/)
