@@ -1,6 +1,6 @@
-# BPL Desktop Wallet
+# Blockpool Desktop Wallet
 
-![BPL Desktop Wallet](./banner.png)
+![Blockpool Desktop Wallet](./banner.png)
 
 [![Build Status](https://badgen.now.sh/circleci/github/blockpool-io/desktop-wallet)](https://circleci.com/gh/ArkEcosystem/desktop-wallet)
 [![Latest Version](https://badgen.now.sh/github/release/blockpool-io/desktop-wallet)](https://github.com/ArkEcosystem/desktop-wallet/releases)

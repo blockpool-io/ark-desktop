@@ -25,7 +25,7 @@ export default {
       const announcementsFromFeedItems = items.map(item => Announcement.deserialize(item))
         .map(i => ({
           ...i,
-          guid: i.guid || i.url
+          guid: i.guid || btoa(i.url).replace('=', '')
         }))
 
       state.announcements = unionBy(state.announcements, announcementsFromFeedItems, 'guid')
