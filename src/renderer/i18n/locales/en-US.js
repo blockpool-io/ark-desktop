@@ -224,7 +224,7 @@ export default {
   },
 
   APP_FOOTER: {
-    TEXT: 'Made with ♥ by Blockpool'
+    TEXT: 'Made with ♥ by Ark and Blockpool'
   },
 
   APP_SIDEMENU: {
