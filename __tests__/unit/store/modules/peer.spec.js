@@ -169,7 +169,7 @@ describe('peer store module', () => {
     const badV2Peer = { ...badPeer1, ip: '5.5.5.5', version: '1.0.0' }
     const refreshPeers = [goodV2Peer, badV2Peer]
 
-    nock(`http://${goodPeer1.ip}:${goodPeer1.ports['@arkecosystem/core-api']}`)
+    nock(`http://${goodPeer1.ip}:${goodPeer1.ports['@blockpool-io/core-api']}`)
       .persist()
       .get('/api/v2/transactions/fees')
       .reply(200, {
@@ -182,7 +182,7 @@ describe('peer store module', () => {
       })
 
     for (const peer of refreshPeers) {
-      nock(`http://${peer.ip}:${peer.ports['@arkecosystem/core-api']}`)
+      nock(`http://${peer.ip}:${peer.ports['@blockpool-io/core-api']}`)
         .persist()
         .get('/api/v2/peers')
         .reply(200, {
