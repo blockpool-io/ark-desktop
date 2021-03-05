@@ -1,0 +1,64 @@
+{
+  "id": "bpl.mainnet",
+  "name": "Blockpool",
+  "title": "Blockpool",
+  "server": "http://api.mainnet.blockpool.io:9031",
+  "description": "Blockpool Mainnet",
+  "imagePath": "networks/bpl.testnet.svg",
+  "apiVersion": 2,
+  "slip44": "111",
+  "market": {
+    "enabled": false,
+    "ticker": null
+  },
+  "feeStatistics": [
+    {
+      "type": 0,
+      "fees": {
+        "avgFee": 10000000,
+        "maxFee": 10000000,
+        "minFee": 10000000
+      }
+    },
+    {
+      "type": 1,
+      "fees": {
+        "avgFee": 500000000,
+        "maxFee": 500000000,
+        "minFee": 500000000
+      }
+    },
+    {
+      "type": 2,
+      "fees": {
+        "avgFee": 1000000000,
+        "maxFee": 1000000000,
+        "minFee": 1000000000
+      }
+    },
+    {
+      "type": 3,
+      "fees": {
+        "avgFee": 100000000,
+        "maxFee": 100000000,
+        "minFee": 100000000
+      }
+    }
+  ],
+  "constants": {
+    "activeDelegates": 201,
+    "epoch": "2019-08-03T16:34:49.986Z"
+  },
+  "vendorField": {
+    "maxLength": 255
+  },
+  "nethash": "585bdcc1c4434beab47078224c707072ef7dd8927187e2b8632907fb8b6d5153",
+  "explorer": "http://explorer.mainnet.blockpool.io",
+  "token": "BPL",
+  "subunit": "blocktoshi",
+  "symbol": "β",
+  "fractionDigits": 8,
+  "version": 25,
+  "wif": 170,
+  "knownWallets": {}
+}

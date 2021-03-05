@@ -1,89 +1,119 @@
-# BPL Desktop Wallet
+# Blockpool Desktop Wallet
 
-<p align="center">
-    <img src="./banner.png" />
-</p>
+![Blockpool Desktop Wallet](./banner.png)
 
-[![Github Latest Release](https://badgen.now.sh/github/release/blockpool-io/bpl-desktop)](https://github.com/blockpool-io/bpl-desktop/releases/latest)
-[![Github Downloads](https://badgen.now.sh/github/assets-dl/blockpool-io/bpl-desktop)](https://github.com/blockpool-io/bpl-desktop/releases/latest)
-[![License: MIT](https://badgen.now.sh/badge/license/MIT)](https://opensource.org/licenses/MIT)
+[![Build Status](https://badgen.now.sh/circleci/github/blockpool-io/desktop-wallet)](https://circleci.com/gh/ArkEcosystem/desktop-wallet)
+[![Latest Version](https://badgen.now.sh/github/release/blockpool-io/desktop-wallet)](https://github.com/ArkEcosystem/desktop-wallet/releases)
+[![License: MIT](https://badgen.now.sh/badge/license/MIT/green)](https://opensource.org/licenses/MIT)
 
-## Features
-* Available on ***Windows***, ***Linux*** (Ubuntu/Debian) and ***macOS*** (signed)
-* No need to download BPL blockchain, just sync to the network: launch and use within seconds
-* View any account from its address (transactions, delegate status and votes)
-* Label any account and add your own contacts
-* Hardware wallet support: Ledger Nano S
-* Real-time currency value (updated every 5 min) in USD, EUR, BTC, HKD, JPY, CNY, AUD, GBP, RUB, ...
-* Autoconnect to a healthy BPL network peer. If the peer is not good anymore, it will automatically find a new one
-* Send BPL from / to any account
-* Easily switch to a different network, or private chains
-* Customized backgrounds and themes for better user experience
-* Choose between dark or light mode
-* Isolated processes on Windows and macOS to prevent from data sniffing or injection
-* Translations (thanks to the BPL community)
-* Organise your accounts with virtual folders (for instance savings, personnal etc...) so you don't pay any transfer fee (stored locally)
-* Change your delegate vote
-* When new version is available, the wallet will let you know
-* Easy to update - download latest version, start installation program and it will automatically remove previous version and install new one
-* Second signature supported
-* **SAVE YOUR PASSPHRASE(S) - if you lose it, you lose access to that particular BPL address(es). There is no forgot my password option with blockchains and no one can help you retrieve it!**
+> Lead Maintainer: [Alex Barnsley](https://github.com/alexbarnsley)
 
-## Installation
+## Download
+[Latest Release](https://github.com/blockpool-io/bpl-desktop/releases)
 
-### Download
-[Latest Release](../../releases/latest)
+## Development
 
-### From code
+### Requirements
 
-To clone and run this repository you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer. Optionally switch to node 8.12.0, because this is currently developped with this version:
+#### Ubuntu
+In Ubuntu the development files of `libudev` are necessary:
 ```
-sudo npm install -g n
-sudo n 8.11.2
+sudo apt-get install libudev-dev libusb-1.0-0-dev
 ```
 
-Install from source:
-```bash
-# Clone this repository
-git clone https://github.com/blockpool-io/BPL-desktop
+#### Windows
+- Python 2.7
+- Visual Studio 2017
 
-# Go into the repository
-cd BPL-desktop
+#### Node 12
+To download, head over to [here](https://nodejs.org/en/) and download Node 12.
 
-# Install dependencies 
-npm install
+If you already have npm installed, you can run
+```
+npm install -g n
+sudo n 12
 ```
 
-* In some cases, [node-hid](https://github.com/node-hid/node-hid) doesn't provide pre-built binaries, so is necessary to install the [node-hid dependencies](https://github.com/node-hid/node-hid#compiling-from-source) to build them from source before running `npm install`.
-
-Then start:
-```bash
-npm start
+#### Yarn
+Install the Yarn dependency manager
+```
+npm install -g yarn
 ```
 
-### Necessary to package from macOS
+### Commands
 
+<details><summary>List of commands</summary>
+
+``` bash
+# Install dependencies
+yarn install
+
+# Execute the application. Making changes in the code, updates the application (hot reloading).
+yarn dev
+
+# Lint all JS/Vue files in the `src` and `__tests__`
+yarn lint
+
+# Lint, and fix, all JS/Vue files in `src` and `__tests__`
+yarn lint:fix
+
+# Check that all dependencies are used
+yarn depcheck
+
+# Collect the code and produce a compressed file
+yarn pack
+
+# Build electron application for production (Current OS)
+yarn build
+
+# Build electron application for production (Windows)
+yarn build:win
+
+# Build electron application for production (Mac)
+yarn build:mac
+
+# Build electron application for production (Linux)
+yarn build:linux
+
+# Run unit and end-to-end tests
+yarn test
+
+# Run unit tests
+yarn test:unit
+
+# Run unit tests and generate and display the coverage report
+yarn test:unit:coverage
+
+# Run unit tests and watch for changes to re-run the tests
+yarn test:unit:watch
+
+# Run end-to-end tests, without building the application
+yarn test:e2e
+
+# Build the application and run end-to-end tests
+yarn test:e2e:full
+
+# List what translations are missing or unused on a specific language. It could capture suggestions that are not accurate
+yarn i18n 'src/renderer/i18n/locales/LANGUAGE.js'
+
+# List what English messages are missing or unused (English is the default language)
+yarn i18n:en-US
+
+# List what translations are missing or unused on every language
+yarn i18n:all
 ```
-brew tap Homebrew/bundle
-brew bundle
-```
 
-### Necessary to package from Linux
+</details>
 
-* Compilation Tools: ```apt-get install build-essential git```
-* Gcc4.8: ```apt-get install gcc-4.8 g++-4.8 && export CXX=g++-4.8```
-* libusb-1.0.0 headers: ```sudo apt-get install libusb-1.0.0 libusb-1.0.0-dev```
+## Security
 
+If you discover a security vulnerability within this project, please send an e-mail to support@blockpool.io. All security vulnerabilities will be promptly addressed.
 
-## Contributing
-Read more about the [Developer Bounty Programme](https://www.blockpool.io/developer-bounty-programme) to learn about how to contribute to this project.
+## Credits
 
-## Authors
-- [Raj Singh](https://github.com/cyrus19901)
-- [Brandon Cook](https://github.com/locohammerhead)
-- [FX Thoorens](https://github.com/fix)
-- [Guillaume Verbal](https://github.com/Doweig)
-- [All Contributors](../../contributors)
+This project exists thanks to all the people who [contribute](../../contributors).
 
 ## License
+
 [MIT](LICENSE) © [Blockpool](https://blockpool.io)
+[MIT](LICENSE) © [ArkEcosystem](https://ark.io)
