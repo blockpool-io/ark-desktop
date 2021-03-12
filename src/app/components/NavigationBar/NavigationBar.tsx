@@ -123,7 +123,7 @@ export const NavigationButtonWrapper = styled.div`
 `;
 
 const LogoContainer = styled.div`
-	${tw`flex items-center justify-center w-11 h-11 my-auto mr-4 text-white rounded bg-logo`};
+	${tw`flex items-center justify-center w-11 h-11 my-auto mr-4 text-white rounded`};
 `;
 
 export const NavigationBar = ({
