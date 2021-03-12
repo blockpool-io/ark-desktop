@@ -7,7 +7,6 @@ import { ReactComponent as AlertHint } from "./alert-hint.svg";
 import { ReactComponent as AlertInfo } from "./alert-info.svg";
 import { ReactComponent as AlertSuccess } from "./alert-success.svg";
 import { ReactComponent as AlertWarning } from "./alert-warning.svg";
-import { ReactComponent as ArkLogo } from "./bpl-logo.svg";
 import { ReactComponent as ArrowLeft } from "./arrow-left.svg";
 import { ReactComponent as ArrowRight } from "./arrow-right.svg";
 import { ReactComponent as Article } from "./article.svg";
@@ -16,6 +15,7 @@ import { ReactComponent as AwaitingOtherSignature } from "./awaiting-other-signa
 import { ReactComponent as AwaitingOurSignature } from "./awaiting-our-signature.svg";
 import { ReactComponent as Back } from "./back.svg";
 import { ReactComponent as Blockfolio } from "./blockfolio.svg";
+import { ReactComponent as ArkLogo } from "./bpl-logo.svg";
 import { ReactComponent as Bridgechain } from "./bridgechain.svg";
 import { ReactComponent as Business } from "./business.svg";
 import { ReactComponent as CaretDown } from "./caret-down.svg";

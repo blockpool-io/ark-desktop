@@ -2,7 +2,6 @@
 import "focus-visible";
 
 import { ARK } from "@arkecosystem/platform-sdk-ark";
-import { BPL } from "platform-sdk-bpl";
 // import { ATOM } from "@arkecosystem/platform-sdk-atom";
 // import { BTC } from "@arkecosystem/platform-sdk-btc";
 // import { EOS } from "@arkecosystem/platform-sdk-eos";
@@ -19,6 +18,7 @@ import LedgerTransportNodeHID from "@ledgerhq/hw-transport-node-hid-singleton";
 import { Offline } from "domains/error/pages";
 import { Splash } from "domains/splash/pages";
 import { migrateProfileFixtures } from "migrations";
+import { BPL } from "platform-sdk-bpl";
 import { usePluginManagerContext } from "plugins";
 import { PluginRouterWrapper } from "plugins/components/PluginRouterWrapper";
 import React, { useEffect, useLayoutEffect, useState } from "react";

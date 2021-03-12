@@ -1,6 +1,6 @@
 import { ReactComponent as ARK } from "./ark.svg";
-import { ReactComponent as BPL } from "./bpl.svg";
 import { ReactComponent as BIND } from "./bind.svg";
+import { ReactComponent as BPL } from "./bpl.svg";
 import { ReactComponent as BTC } from "./btc.svg";
 import { ReactComponent as EGLD } from "./egld.svg";
 import { ReactComponent as ETH } from "./eth.svg";
