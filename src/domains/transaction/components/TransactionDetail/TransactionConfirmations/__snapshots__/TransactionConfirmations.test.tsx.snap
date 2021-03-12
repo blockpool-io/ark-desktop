@@ -1,0 +1,81 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TransactionConfirmations should render when confirmed 1`] = `
+<div>
+  <div
+    class="TransactionDetail__TransactionDetailStyled-sc-15h16fu-0 hqOyLp undefined no-ligatures"
+    data-testid="TransactionDetail"
+  >
+    <div
+      class="flex-1 space-y-2"
+    >
+      <div
+        class="text-sm font-semibold text-theme-secondary-700 no-ligatures"
+      >
+        Confirmations
+      </div>
+      <div
+        class="font-semibold"
+      >
+        <div
+          class="flex space-x-3"
+        >
+          <span>
+            Well confirmed
+          </span>
+          <span>
+            <div
+              class="sc-bdfBwQ iSzUah text-theme-success-600"
+              height="22"
+              width="22"
+            >
+              <svg>
+                status-ok.svg
+              </svg>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`TransactionConfirmations should render when not confirmed 1`] = `
+<div>
+  <div
+    class="TransactionDetail__TransactionDetailStyled-sc-15h16fu-0 hqOyLp undefined no-ligatures"
+    data-testid="TransactionDetail"
+  >
+    <div
+      class="flex-1 space-y-2"
+    >
+      <div
+        class="text-sm font-semibold text-theme-secondary-700 no-ligatures"
+      >
+        Confirmations
+      </div>
+      <div
+        class="font-semibold"
+      >
+        <div
+          class="flex space-x-3"
+        >
+          <span>
+            Not confirmed
+          </span>
+          <div
+            class="sc-bdfBwQ iSzUah text-theme-warning-600"
+            height="22"
+            width="22"
+          >
+            <svg>
+              status-pending.svg
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

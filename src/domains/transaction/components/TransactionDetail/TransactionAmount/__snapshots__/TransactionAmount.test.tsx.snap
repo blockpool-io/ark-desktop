@@ -1,0 +1,185 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TransactionAmount should render 1`] = `
+<div>
+  <div
+    class="TransactionDetail__TransactionDetailStyled-sc-15h16fu-0 hqOyLp undefined no-ligatures"
+    data-testid="TransactionDetail"
+  >
+    <div
+      class="flex-1 space-y-2"
+    >
+      <div
+        class="text-sm font-semibold text-theme-secondary-700 no-ligatures"
+      >
+        Amount
+      </div>
+      <div
+        class="font-semibold"
+      >
+        <div
+          class="Label-sc-1tj9hzr-0 fMWESr"
+          color="success"
+        >
+          <span
+            data-testid="Amount"
+          >
+            + 0.00000001 DARK
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      class="Circle-uw7h4j-0 JkqUV border-theme-success-300 text-theme-success-600 dark:border-theme-success-600"
+    >
+      <div
+        class="sc-bdfBwQ fPrsah"
+        height="1em"
+        width="1em"
+      >
+        <svg>
+          received.svg
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`TransactionAmount should render currency amount 1`] = `
+<div>
+  <div
+    class="TransactionDetail__TransactionDetailStyled-sc-15h16fu-0 hqOyLp undefined no-ligatures"
+    data-testid="TransactionDetail"
+  >
+    <div
+      class="flex-1 space-y-2"
+    >
+      <div
+        class="text-sm font-semibold text-theme-secondary-700 no-ligatures"
+      >
+        Amount
+      </div>
+      <div
+        class="font-semibold"
+      >
+        <div
+          class="Label-sc-1tj9hzr-0 fMWESr"
+          color="success"
+        >
+          <span
+            data-testid="Amount"
+          >
+            + 0.00000001 DARK
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      class="Circle-uw7h4j-0 JkqUV border-theme-success-300 text-theme-success-600 dark:border-theme-success-600"
+    >
+      <div
+        class="sc-bdfBwQ fPrsah"
+        height="1em"
+        width="1em"
+      >
+        <svg>
+          received.svg
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`TransactionAmount should render label for multiple recipients 1`] = `
+<div>
+  <div
+    class="TransactionDetail__TransactionDetailStyled-sc-15h16fu-0 hqOyLp undefined no-ligatures"
+    data-testid="TransactionDetail"
+  >
+    <div
+      class="flex-1 space-y-2"
+    >
+      <div
+        class="text-sm font-semibold text-theme-secondary-700 no-ligatures"
+      >
+        Amount
+      </div>
+      <div
+        class="font-semibold"
+      >
+        <div
+          class="Label-sc-1tj9hzr-0 fMWESr"
+          color="success"
+        >
+          <span
+            data-testid="Amount"
+          >
+            + 0.00000001 DARK
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      class="Circle-uw7h4j-0 JkqUV border-theme-success-300 text-theme-success-600 dark:border-theme-success-600"
+    >
+      <div
+        class="sc-bdfBwQ fPrsah"
+        height="1em"
+        width="1em"
+      >
+        <svg>
+          received.svg
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`TransactionAmount should render label for multiple recipients 2`] = `
+<div>
+  <div
+    class="TransactionDetail__TransactionDetailStyled-sc-15h16fu-0 hqOyLp undefined no-ligatures"
+    data-testid="TransactionDetail"
+  >
+    <div
+      class="flex-1 space-y-2"
+    >
+      <div
+        class="text-sm font-semibold text-theme-secondary-700 no-ligatures"
+      >
+        Total Amount
+      </div>
+      <div
+        class="font-semibold"
+      >
+        <div
+          class="Label-sc-1tj9hzr-0 fMWESr"
+          color="success"
+        >
+          <span
+            data-testid="Amount"
+          >
+            + 0.00000001 DARK
+          </span>
+        </div>
+      </div>
+    </div>
+    <div
+      class="Circle-uw7h4j-0 JkqUV border-theme-success-300 text-theme-success-600 dark:border-theme-success-600"
+    >
+      <div
+        class="sc-bdfBwQ fPrsah"
+        height="1em"
+        width="1em"
+      >
+        <svg>
+          received.svg
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+`;

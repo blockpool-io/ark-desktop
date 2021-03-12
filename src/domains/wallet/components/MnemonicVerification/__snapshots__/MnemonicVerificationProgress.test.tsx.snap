@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MnemonicVerificationProgress should render tabs 1`] = `
+<DocumentFragment>
+  <ul
+    class="flex space-x-2"
+  >
+    <button
+      class="MnemonicVerificationOptions__OptionButton-sc-175bail-0 MnemonicVerificationProgress__TabStyled-wy5xj6-0 eSJxgP eEZbxV"
+      data-testid="MnemonicVerificationProgress__Tab"
+      disabled=""
+    >
+      <span
+        class="text-lg text-theme-success-600 dark:text-theme-secondary-200"
+      >
+        <div
+          class="sc-bdfBwQ fcykxB"
+          height="28"
+          width="28"
+        >
+          <svg>
+            status-ok.svg
+          </svg>
+        </div>
+      </span>
+    </button>
+    <button
+      class="MnemonicVerificationOptions__OptionButton-sc-175bail-0 MnemonicVerificationProgress__TabStyled-wy5xj6-0 eSJxgP fcpTSy"
+      data-testid="MnemonicVerificationProgress__Tab"
+      disabled=""
+    >
+      <span>
+        The 2nd word
+      </span>
+    </button>
+    <button
+      class="MnemonicVerificationOptions__OptionButton-sc-175bail-0 MnemonicVerificationProgress__TabStyled-wy5xj6-0 eSJxgP eOWDLU"
+      data-testid="MnemonicVerificationProgress__Tab"
+      disabled=""
+    >
+      <span>
+        The 3rd word
+      </span>
+    </button>
+  </ul>
+</DocumentFragment>
+`;

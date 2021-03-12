@@ -1,0 +1,242 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Table should render 1`] = `
+<div>
+  <div
+    class="Table__TableWrapper-sc-84pst5-0 ccYCKK -mt-3"
+    role="table"
+  >
+    <table
+      cellpadding="0"
+      class="table-auto"
+    >
+      <thead>
+        <tr
+          class="border-b border-theme-secondary-300 dark:border-theme-secondary-800"
+          role="row"
+        >
+          <th
+            class="group relative text-sm text-left select-none text-theme-secondary-500 border-theme-secondary-300 dark:text-theme-secondary-700 dark:border-theme-secondary-800 m-0 p-3 first:pl-0 last:pr-0 font-semibold hasBorder w-1"
+            colspan="1"
+            data-testid="table__th--0"
+            role="columnheader"
+            style="cursor: pointer;"
+            title="Toggle SortBy"
+          >
+            <div
+              class="flex flex-inline align-top flex-row-reverse"
+            >
+              <div>
+                Header 1
+              </div>
+              <div
+                class="flex items-center text-theme-secondary-500 dark:text-theme-secondary-700 transition-opacity opacity-0 group-hover:opacity-100 ml-2"
+              >
+                <div
+                  class="sc-bdfBwQ kJrqvM transition-transform transform rotate-180"
+                  height="5"
+                  role="img"
+                  width="8"
+                >
+                  <svg>
+                    chevron-down.svg
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </th>
+          <th
+            class="group relative text-sm text-left select-none text-theme-secondary-500 border-theme-secondary-300 dark:text-theme-secondary-700 dark:border-theme-secondary-800 m-0 p-3 first:pl-0 last:pr-0 font-semibold"
+            colspan="1"
+            data-testid="table__th--1"
+            role="columnheader"
+            style="cursor: pointer;"
+            title="Toggle SortBy"
+          >
+            <div
+              class="flex flex-inline align-top no-border"
+            >
+              <div>
+                Header 2
+              </div>
+              <div
+                class="flex items-center text-theme-secondary-500 dark:text-theme-secondary-700 transition-opacity opacity-0 group-hover:opacity-100 ml-2"
+              >
+                <div
+                  class="sc-bdfBwQ kJrqvM transition-transform transform rotate-180"
+                  height="5"
+                  role="img"
+                  width="8"
+                >
+                  <svg>
+                    chevron-down.svg
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </th>
+          <th
+            class="group relative text-sm text-left select-none text-theme-secondary-500 border-theme-secondary-300 dark:text-theme-secondary-700 dark:border-theme-secondary-800 m-0 p-3 first:pl-0 last:pr-0 font-semibold hasBorder"
+            colspan="1"
+            data-testid="table__th--2"
+            role="columnheader"
+            style="cursor: pointer;"
+            title="Toggle SortBy"
+          >
+            <div
+              class="flex flex-inline align-top justify-end flex-row-reverse"
+            >
+              <div>
+                Header 3
+              </div>
+              <div
+                class="flex items-center text-theme-secondary-500 dark:text-theme-secondary-700 transition-opacity opacity-0 group-hover:opacity-100 ml-auto mr-2"
+              >
+                <div
+                  class="sc-bdfBwQ kJrqvM transition-transform transform rotate-180"
+                  height="5"
+                  role="img"
+                  width="8"
+                >
+                  <svg>
+                    chevron-down.svg
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody
+        role="rowgroup"
+      >
+        <tr>
+          <td>
+            1
+          </td>
+          <td>
+            2
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+`;
+
+exports[`Table should render empty rows if template not provided 1`] = `
+<div>
+  <div
+    class="Table__TableWrapper-sc-84pst5-0 ccYCKK -mt-3"
+    role="table"
+  >
+    <table
+      cellpadding="0"
+      class="table-auto"
+    >
+      <thead>
+        <tr
+          class="border-b border-theme-secondary-300 dark:border-theme-secondary-800"
+          role="row"
+        >
+          <th
+            class="group relative text-sm text-left select-none text-theme-secondary-500 border-theme-secondary-300 dark:text-theme-secondary-700 dark:border-theme-secondary-800 m-0 p-3 first:pl-0 last:pr-0 font-semibold hasBorder w-1"
+            colspan="1"
+            data-testid="table__th--0"
+            role="columnheader"
+            style="cursor: pointer;"
+            title="Toggle SortBy"
+          >
+            <div
+              class="flex flex-inline align-top flex-row-reverse"
+            >
+              <div>
+                Header 1
+              </div>
+              <div
+                class="flex items-center text-theme-secondary-500 dark:text-theme-secondary-700 transition-opacity opacity-0 group-hover:opacity-100 ml-2"
+              >
+                <div
+                  class="sc-bdfBwQ kJrqvM transition-transform transform rotate-180"
+                  height="5"
+                  role="img"
+                  width="8"
+                >
+                  <svg>
+                    chevron-down.svg
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </th>
+          <th
+            class="group relative text-sm text-left select-none text-theme-secondary-500 border-theme-secondary-300 dark:text-theme-secondary-700 dark:border-theme-secondary-800 m-0 p-3 first:pl-0 last:pr-0 font-semibold"
+            colspan="1"
+            data-testid="table__th--1"
+            role="columnheader"
+            style="cursor: pointer;"
+            title="Toggle SortBy"
+          >
+            <div
+              class="flex flex-inline align-top no-border"
+            >
+              <div>
+                Header 2
+              </div>
+              <div
+                class="flex items-center text-theme-secondary-500 dark:text-theme-secondary-700 transition-opacity opacity-0 group-hover:opacity-100 ml-2"
+              >
+                <div
+                  class="sc-bdfBwQ kJrqvM transition-transform transform rotate-180"
+                  height="5"
+                  role="img"
+                  width="8"
+                >
+                  <svg>
+                    chevron-down.svg
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </th>
+          <th
+            class="group relative text-sm text-left select-none text-theme-secondary-500 border-theme-secondary-300 dark:text-theme-secondary-700 dark:border-theme-secondary-800 m-0 p-3 first:pl-0 last:pr-0 font-semibold hasBorder"
+            colspan="1"
+            data-testid="table__th--2"
+            role="columnheader"
+            style="cursor: pointer;"
+            title="Toggle SortBy"
+          >
+            <div
+              class="flex flex-inline align-top justify-end flex-row-reverse"
+            >
+              <div>
+                Header 3
+              </div>
+              <div
+                class="flex items-center text-theme-secondary-500 dark:text-theme-secondary-700 transition-opacity opacity-0 group-hover:opacity-100 ml-auto mr-2"
+              >
+                <div
+                  class="sc-bdfBwQ kJrqvM transition-transform transform rotate-180"
+                  height="5"
+                  role="img"
+                  width="8"
+                >
+                  <svg>
+                    chevron-down.svg
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody
+        role="rowgroup"
+      >
+        <tr />
+      </tbody>
+    </table>
+  </div>
+</div>
+`;

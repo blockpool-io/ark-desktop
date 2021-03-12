@@ -1,0 +1,14 @@
+{
+	"name": "plugin-test-custom-button",
+	"version": "0.0.1",
+	"author": "Lucio",
+	"desktop-wallet": {
+		"title": "Test Custom Button",
+		"categories": [
+			"utility"
+		],
+		"permissions": [
+			"THEME"
+		]
+	}
+}

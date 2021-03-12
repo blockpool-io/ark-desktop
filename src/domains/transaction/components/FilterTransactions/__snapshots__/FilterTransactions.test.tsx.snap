@@ -1,0 +1,359 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FilterTransactions should open dropdown list with all transaction types 1`] = `
+<div>
+  <div
+    data-testid="FilterTransactions"
+  >
+    <div
+      class="relative"
+    >
+      <span
+        data-testid="dropdown__toggle"
+      >
+        <button
+          class="flex items-center py-2 font-semibold rounded focus:outline-none space-x-2 text-theme-secondary-500"
+          data-testid="CollapseToggleButton"
+        >
+          <span>
+            <span
+              class="text-theme-secondary-500 dark:text-theme-secondary-600"
+            >
+              Type
+              :
+               
+            </span>
+            <span
+              class="text-theme-secondary-700 dark:text-theme-secondary-200"
+            >
+              All
+            </span>
+          </span>
+          <span
+            class="CollapseToggleButton__ToggleIcon-sc-1f6f05f-0 dFzEAw"
+          >
+            <div
+              class="sc-bdfBwQ kJrqvM"
+              height="5"
+              width="8"
+            >
+              <svg>
+                chevron-down.svg
+              </svg>
+            </div>
+          </span>
+        </button>
+      </span>
+      <div
+        class="Dropdown__Wrapper-ocz1je-0 eHhOdC opacity-0 mt-3 py-3 absolute z-10 rounded-lg shadow-xl w-80 max-h-128 overflow-y-auto"
+        data-testid="dropdown__content"
+        style="opacity: 100; height: -30px; overflow-y: scroll;"
+      >
+        <div
+          class="pt-5 pb-1"
+        >
+          <div
+            class="mt-4 first:mt-0"
+          >
+            <ul>
+              <ul
+                data-testid="dropdown__options"
+              >
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--all-0"
+                >
+                  <span>
+                    All
+                  </span>
+                </li>
+              </ul>
+            </ul>
+          </div>
+          <div
+            class="mt-4 first:mt-0"
+          >
+            <div
+              class="mx-8 -my-2"
+            >
+              <div
+                class="Divider-sc-19q4mlo-0 daSmjL border-theme-secondary-300 dark:border-theme-secondary-600"
+                type="horizontal"
+              />
+            </div>
+            <ul>
+              <li
+                class="block px-8 text-xs font-bold text-left uppercase whitespace-nowrap text-theme-secondary-500 dark:text-theme-secondary-600"
+              >
+                CORE
+              </li>
+              <ul
+                data-testid="dropdown__options"
+              >
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-0"
+                >
+                  <span>
+                    Bridgechain Registration
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-1"
+                >
+                  <span>
+                    Bridgechain Resignation
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-2"
+                >
+                  <span>
+                    Bridgechain Update
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-3"
+                >
+                  <span>
+                    Business Registration
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-4"
+                >
+                  <span>
+                    Business Resignation
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-5"
+                >
+                  <span>
+                    Business Update
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-6"
+                >
+                  <span>
+                    Delegate Registration
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-7"
+                >
+                  <span>
+                    Delegate Registration
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-8"
+                >
+                  <span>
+                    Entity Registration
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-9"
+                >
+                  <span>
+                    Entity Resignation
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-10"
+                >
+                  <span>
+                    Entity Update
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-11"
+                >
+                  <span>
+                    Timelock Claim
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-12"
+                >
+                  <span>
+                    Timelock
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-13"
+                >
+                  <span>
+                    Timelock Refund
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-14"
+                >
+                  <span>
+                    IPFS
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-15"
+                >
+                  <span>
+                    Multipayment
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-16"
+                >
+                  <span>
+                    Multisignature
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-17"
+                >
+                  <span>
+                    Second Signature
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-18"
+                >
+                  <span>
+                    Transfer
+                  </span>
+                </li>
+                <li
+                  class="group flex items-center space-x-2 py-4 px-8 text-base font-semibold text-left whitespace-nowrap cursor-pointer text-theme-secondary-800 dark:text-theme-secondary-200 hover:bg-theme-secondary-200 dark:hover:bg-theme-primary-600 hover:text-theme-primary-600 dark:hover:text-theme-secondary-200"
+                  data-testid="dropdown__option--core-19"
+                >
+                  <span>
+                    Vote
+                  </span>
+                </li>
+              </ul>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`FilterTransactions should render 1`] = `
+<div>
+  <div
+    data-testid="FilterTransactions"
+  >
+    <div
+      class="relative"
+    >
+      <span
+        data-testid="dropdown__toggle"
+      >
+        <button
+          class="flex items-center py-2 font-semibold rounded focus:outline-none space-x-2 text-theme-secondary-500"
+          data-testid="CollapseToggleButton"
+        >
+          <span>
+            <span
+              class="text-theme-secondary-500 dark:text-theme-secondary-600"
+            >
+              Type
+              :
+               
+            </span>
+            <span
+              class="text-theme-secondary-700 dark:text-theme-secondary-200"
+            >
+              All
+            </span>
+          </span>
+          <span
+            class="CollapseToggleButton__ToggleIcon-sc-1f6f05f-0 iUXrER"
+          >
+            <div
+              class="sc-bdfBwQ kJrqvM"
+              height="5"
+              width="8"
+            >
+              <svg>
+                chevron-down.svg
+              </svg>
+            </div>
+          </span>
+        </button>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`FilterTransactions should render with default selected option 1`] = `
+<div>
+  <div
+    data-testid="FilterTransactions"
+  >
+    <div
+      class="relative"
+    >
+      <span
+        data-testid="dropdown__toggle"
+      >
+        <button
+          class="flex items-center py-2 font-semibold rounded focus:outline-none space-x-2 text-theme-secondary-500"
+          data-testid="CollapseToggleButton"
+        >
+          <span>
+            <span
+              class="text-theme-secondary-500 dark:text-theme-secondary-600"
+            >
+              Type
+              :
+               
+            </span>
+            <span
+              class="text-theme-secondary-700 dark:text-theme-secondary-200"
+            >
+              All
+            </span>
+          </span>
+          <span
+            class="CollapseToggleButton__ToggleIcon-sc-1f6f05f-0 iUXrER"
+          >
+            <div
+              class="sc-bdfBwQ kJrqvM"
+              height="5"
+              width="8"
+            >
+              <svg>
+                chevron-down.svg
+              </svg>
+            </div>
+          </span>
+        </button>
+      </span>
+    </div>
+  </div>
+</div>
+`;

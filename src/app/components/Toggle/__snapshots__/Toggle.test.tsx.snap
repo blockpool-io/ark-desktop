@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Toggle should render 1`] = `
+<DocumentFragment>
+  <label
+    class="flex"
+  >
+    <input
+      class="Toggle__Input-qyyifx-0 WGuGL"
+      type="checkbox"
+    />
+    <div
+      class="Toggle__Handle-qyyifx-1 geejDn"
+    >
+      <span
+        class="Toggle__HandleInner-qyyifx-2 gufSfU"
+      />
+    </div>
+  </label>
+</DocumentFragment>
+`;
+
+exports[`Toggle should render disable 1`] = `
+<DocumentFragment>
+  <label
+    class="flex"
+  >
+    <input
+      class="Toggle__Input-qyyifx-0 WGuGL"
+      type="checkbox"
+    />
+    <div
+      class="Toggle__Handle-qyyifx-1 jztkAY"
+      disabled=""
+    >
+      <span
+        class="Toggle__HandleInner-qyyifx-2 kYXRoi"
+        disabled=""
+      />
+    </div>
+  </label>
+</DocumentFragment>
+`;
+
+exports[`Toggle should toggle checked 1`] = `
+<DocumentFragment>
+  <label
+    class="flex"
+  >
+    <input
+      class="Toggle__Input-qyyifx-0 WGuGL"
+      type="checkbox"
+    />
+    <div
+      class="Toggle__Handle-qyyifx-1 geejDn"
+    >
+      <span
+        class="Toggle__HandleInner-qyyifx-2 gufSfU"
+      />
+    </div>
+  </label>
+</DocumentFragment>
+`;

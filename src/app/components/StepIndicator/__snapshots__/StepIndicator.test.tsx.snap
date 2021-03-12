@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StepIndicator should render 1`] = `
+<DocumentFragment>
+  <ul
+    class="StepIndicator__StepWrapper-sc-15t41is-1 iToWWb"
+  >
+    <li
+      class="StepIndicator__StepStyled-sc-15t41is-0 dATCfl"
+    />
+    <li
+      class="StepIndicator__StepStyled-sc-15t41is-0 khoCaB"
+    />
+  </ul>
+</DocumentFragment>
+`;

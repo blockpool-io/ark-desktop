@@ -1,0 +1,5 @@
+plugins:
+    - removeViewBox: false
+    - convertStyleToAttrs: true
+    - cleanupIDs: false
+    - removeUnknownsAndDefaults: false

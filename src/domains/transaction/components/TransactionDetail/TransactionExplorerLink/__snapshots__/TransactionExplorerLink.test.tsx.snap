@@ -1,0 +1,145 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TransactionExplorerLink should render a 'block' link 1`] = `
+<div>
+  <div
+    class="TransactionDetail__TransactionDetailStyled-sc-15h16fu-0 hqOyLp undefined no-ligatures"
+    data-testid="TransactionDetail"
+  >
+    <div
+      class="flex-1 space-y-2"
+    >
+      <div
+        class="text-sm font-semibold text-theme-secondary-700 no-ligatures"
+      >
+        Block ID
+      </div>
+      <div
+        class="font-semibold"
+      >
+        <div
+          class="flex items-center space-x-3"
+        >
+          <a
+            class="Link__AnchorStyled-sc-1q7sbxr-0 cIuuRE inline-flex items-center font-semibold transition-colors duration-200 cursor-pointer text-theme-primary-600 hover:text-theme-primary-700 hover:underline active:text-theme-primary-500"
+            data-testid="Link"
+            rel="noopener noreferrer"
+            to="block-link}"
+          >
+            <span
+              class="underline-dotted"
+            >
+              <span
+                class="TruncateMiddle__Wrapper-sc-3j3e79-0 text-theme-primary-700"
+                data-testid="TruncateMiddle"
+              >
+                test-id
+              </span>
+            </span>
+            <div
+              class="sc-bdfBwQ fPrsah flex-shrink-0 ml-2 text-sm"
+              data-testid="Link__external"
+              height="1em"
+              width="1em"
+            >
+              <svg>
+                redirect.svg
+              </svg>
+            </div>
+          </a>
+          <span
+            class="flex text-theme-primary-300 dark:text-theme-secondary-600"
+          >
+            <div
+              class="inline-block cursor-pointer"
+              data-testid="clipboard__wrapper"
+            >
+              <div
+                class="sc-bdfBwQ fPrsah"
+                height="1em"
+                width="1em"
+              >
+                <svg>
+                  copy.svg
+                </svg>
+              </div>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`TransactionExplorerLink should render a 'transaction' link 1`] = `
+<div>
+  <div
+    class="TransactionDetail__TransactionDetailStyled-sc-15h16fu-0 hqOyLp undefined no-ligatures"
+    data-testid="TransactionDetail"
+  >
+    <div
+      class="flex-1 space-y-2"
+    >
+      <div
+        class="text-sm font-semibold text-theme-secondary-700 no-ligatures"
+      >
+        ID
+      </div>
+      <div
+        class="font-semibold"
+      >
+        <div
+          class="flex items-center space-x-3"
+        >
+          <a
+            class="Link__AnchorStyled-sc-1q7sbxr-0 cIuuRE inline-flex items-center font-semibold transition-colors duration-200 cursor-pointer text-theme-primary-600 hover:text-theme-primary-700 hover:underline active:text-theme-primary-500"
+            data-testid="Link"
+            rel="noopener noreferrer"
+            to="transaction-link}"
+          >
+            <span
+              class="underline-dotted"
+            >
+              <span
+                class="TruncateMiddle__Wrapper-sc-3j3e79-0 text-theme-primary-700"
+                data-testid="TruncateMiddle"
+              >
+                test-id
+              </span>
+            </span>
+            <div
+              class="sc-bdfBwQ fPrsah flex-shrink-0 ml-2 text-sm"
+              data-testid="Link__external"
+              height="1em"
+              width="1em"
+            >
+              <svg>
+                redirect.svg
+              </svg>
+            </div>
+          </a>
+          <span
+            class="flex text-theme-primary-300 dark:text-theme-secondary-600"
+          >
+            <div
+              class="inline-block cursor-pointer"
+              data-testid="clipboard__wrapper"
+            >
+              <div
+                class="sc-bdfBwQ fPrsah"
+                height="1em"
+                width="1em"
+              >
+                <svg>
+                  copy.svg
+                </svg>
+              </div>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

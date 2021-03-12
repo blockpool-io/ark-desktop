@@ -1,0 +1,86 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ApplicationError should render 1`] = `
+<DocumentFragment>
+  <main
+    class="theme-dark"
+    data-testid="Main"
+  >
+    <div
+      class="flex relative flex-col min-h-screen"
+    >
+      <nav
+        aria-labelledby="main menu"
+        class="NavigationBar__NavWrapper-sc-1qsoskw-0 iaiHKx"
+      >
+        <div
+          class="flex relative h-21"
+        >
+          <div
+            class="flex flex-1 px-8 ml-12"
+          >
+            <div
+              class="flex items-center my-auto"
+            >
+              <div
+                class="NavigationBar__LogoContainer-sc-1qsoskw-2 tulfg"
+              >
+                <svg
+                  width="44"
+                >
+                  ark-logo.svg
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div
+        class="flex flex-col flex-1"
+      >
+        <div
+          class="Section__SectionWrapper-sc-8cjvre-0 kJTPww flex flex-col flex-1 justify-center text-center"
+        >
+          <div
+            class="container px-10 mx-auto"
+          >
+            <div
+              class="mx-auto w-64 lg:w-128"
+            >
+              <svg>
+                generic-error.svg
+              </svg>
+            </div>
+            <div
+              class="mt-8"
+              data-testid="ApplicationError__text"
+            >
+              <h2
+                class="text-2xl font-bold"
+              >
+                Something went wrong
+              </h2>
+              <p
+                class="text-theme-secondary-text"
+              >
+                It looks like something went wrong. Try visiting another page or reloading.
+              </p>
+            </div>
+            <button
+              class="Button__StyledButton-mdtvtf-0 ePkfgQ mt-8"
+              data-testid="ApplicationError__button--reload"
+              type="button"
+            >
+              <div
+                class="flex relative items-center space-x-2"
+              >
+                Reload
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</DocumentFragment>
+`;

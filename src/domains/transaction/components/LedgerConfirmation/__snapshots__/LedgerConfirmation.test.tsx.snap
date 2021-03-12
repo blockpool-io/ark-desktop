@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LedgerConfirmation should render 1`] = `
+<DocumentFragment>
+  <svg
+    class="my-8"
+  >
+    confirm-transaction-ledger-banner.svg
+  </svg>
+  <div
+    class="mt-8 text-theme-secondary-text"
+    data-testid="LedgerConfirmation-description"
+  >
+    Please review and verify the information on your Ledger device. Choose Accept to complete your transaction.
+  </div>
+  <div
+    class="inline-flex items-center mt-8 space-x-3 w-full"
+  >
+    <div
+      class="Spinner-sc-1tybciv-0 gzGczR"
+      color="info"
+    />
+    <span
+      class="font-semibold text-theme-secondary-900 dark:text-theme-secondary-600"
+      data-testid="LedgerConfirmation-loading_message"
+    >
+      Waiting for confirmation …
+    </span>
+  </div>
+</DocumentFragment>
+`;
