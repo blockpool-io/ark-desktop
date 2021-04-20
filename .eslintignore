@@ -1,1 +1,2 @@
 tailwind.js
+src/renderer/store/modules/peer/index.js

@@ -20,21 +20,21 @@
 <g
    transform="translate(0,-88.276)"
    id="g51">
-	<rect
+  <rect
    x="0"
    id="rect45"
    height="37.27"
    width="512"
    style="fill:#f5f5f5"
    y="125.551" />
-	<rect
+  <rect
    x="0"
    id="rect47"
    height="37.27"
    width="512"
    style="fill:#f5f5f5"
    y="200.091" />
-	<rect
+  <rect
    x="0"
    id="rect49"
    height="37.27"
@@ -59,11 +59,11 @@
 <g
    transform="translate(0,-88.276)"
    id="g61">
-	<path
+  <path
    id="path57"
    d="m 8.828,423.725 h 494.345 c 4.875,0 8.828,-3.953 8.828,-8.828 V 386.452 H 0 v 28.445 c 0,4.876 3.953,8.828 8.828,8.828 z"
    style="fill:#41479b" />
-	<path
+  <path
    id="path59"
    d="M 512,125.549 V 97.104 c 0,-4.875 -3.953,-8.828 -8.828,-8.828 H 8.828 C 3.953,88.277 0,92.229 0,97.104 v 65.717 37.271 74.545 H 512 V 237.365 H 176.552 V 200.093 H 512 V 162.821 H 176.552 v -37.272 c 0,0 335.448,0 335.448,0 z"
    style="fill:#41479b" />

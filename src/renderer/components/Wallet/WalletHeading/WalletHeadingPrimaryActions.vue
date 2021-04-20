@@ -3,10 +3,21 @@
     key="PrimaryActions"
     class="WalletHeading__PrimaryActions flex items-center"
   >
+    <SvgIcon
+      v-if="currentWallet.multiSignature"
+      v-tooltip="$t('PAGES.WALLET.MULTI_SIGNATURE_WALLET')"
+      class="w-5 h-5 text-theme-heading-text opacity-50"
+      name="multi-signature"
+      view-box="0 0 16 16"
+    />
+
     <button
-      v-if="showNotVoting"
-      v-tooltip="{ content: $t('PAGES.WALLET_SHOW.NO_VOTE'), trigger:'hover' }"
-      class="bg-theme-button-special-choice cursor-pointer rounded-full w-2 h-2 m-3"
+      v-tooltip="{
+        content: isVoting ? $t('PAGES.WALLET_SHOW.VOTING_FOR', { delegate: walletVote.username }) : $t('PAGES.WALLET_SHOW.NO_VOTE'),
+        trigger: 'hover'
+      }"
+      :class="isVoting ? 'bg-theme-button-special-choice' : 'bg-transparent'"
+      class=" cursor-pointer border border-theme-button-special-choice rounded-full w-2 h-2 m-3 transition"
       @click="goToDelegates"
     />
 
@@ -62,9 +73,8 @@
         <TransactionModal
           v-if="isOpen"
           :type="0"
-          @cancel="toggle"
-          @close="toggle"
-          @sent="toggle"
+          @cancel="closeTransactionModal(toggle, isOpen)"
+          @sent="closeTransactionModal(toggle, isOpen)"
         />
       </template>
     </ButtonModal>
@@ -76,6 +86,7 @@ import { ButtonModal, ButtonReload } from '@/components/Button'
 import { ModalQrCode } from '@/components/Modal'
 import { TransactionModal } from '@/components/Transaction'
 import { ContactRenameModal } from '@/components/Contact'
+import SvgIcon from '@/components/SvgIcon'
 
 export default {
   name: 'WalletHeadingPrimaryActions',
@@ -87,15 +98,13 @@ export default {
     ButtonReload,
     ModalQrCode,
     TransactionModal,
-    ContactRenameModal
+    ContactRenameModal,
+    SvgIcon
   },
 
-  data () {
-    return {
-      isRefreshing: false,
-      showNotVoting: false
-    }
-  },
+  data: () => ({
+    isRefreshing: false
+  }),
 
   computed: {
     buttonStyle () {
@@ -108,17 +117,10 @@ export default {
 
     doesNotExist () {
       return !this.$store.getters['wallet/byAddress'](this.currentWallet.address)
-    }
-  },
-
-  watch: {
-    // Never show the not-voting icon until knowing if the wallet is voting or not
-    'currentWallet.address' () {
-      this.showNotVoting = false
     },
-    // To react to changes on the injected `walletVote` and changed not-voting icon immediately
-    'walletVote.publicKey' () {
-      this.showNotVoting = !this.walletVote.publicKey
+
+    isVoting () {
+      return !!this.walletVote.username
     }
   },
 
@@ -131,6 +133,12 @@ export default {
       this.isRefreshing = true
       await this.$eventBus.emit('wallet:reload')
       this.isRefreshing = false
+    },
+
+    closeTransactionModal (toggleMethod, isOpen) {
+      if (isOpen) {
+        toggleMethod()
+      }
     }
   }
 }

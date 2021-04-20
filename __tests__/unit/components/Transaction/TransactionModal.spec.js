@@ -1,5 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import { useI18nGlobally } from '../../__utils__/i18n'
+import transaction from '../../__fixtures__/models/transaction'
 import TransactionModal from '@/components/Transaction/TransactionModal'
 
 const i18n = useI18nGlobally()
@@ -117,36 +118,57 @@ describe('TransactionModal', () => {
   })
 
   describe('storeTransaction', () => {
-    it('should dispatch `transaction/create` using the transaction, but replacing some attributes, and the current profile', () => {
-      const transaction = {
-        id: 'tx1',
-        type: 0,
-        amount: 10000,
-        fee: 1000,
-        timestamp: 120,
-        recipientId: 'Arecipient',
-        senderPublicKey: 'Asender',
-        vendorField: 'smartbridge'
-      }
-      wrapper.vm.storeTransaction(transaction)
-
-      const { id, type, amount, fee, vendorField } = transaction
-      const timestamp = (new Date(wrapper.vm.session_network.constants.epoch)).getTime() + transaction.timestamp * 1000
+    const expectTransactionStored = (transaction, timestamp) => {
+      const { id, type, typeGroup, amount, fee, vendorField } = transaction
 
       const expected = {
         profileId,
         id,
         type,
+        typeGroup,
         amount,
         fee,
         vendorField,
         confirmations: 0,
         timestamp,
-        sender: 'public key of Asender',
+        sender: `address of ${transaction.senderPublicKey}`,
         recipient: transaction.recipientId,
         raw: transaction
       }
+
       expect($store.dispatch).toHaveBeenCalledWith('transaction/create', expected)
+    }
+
+    describe('when the transaction has a timestamp (V1)', () => {
+      it('should calculate the timestamp based on the epoch', () => {
+        const dateSpy = jest.spyOn(Date, 'now').mockReturnValue(1000000)
+
+        const timestamp = (new Date(wrapper.vm.session_network.constants.epoch)).getTime() + transaction.timestamp * 1000
+
+        wrapper.vm.storeTransaction(transaction)
+        expectTransactionStored(transaction, timestamp)
+
+        dateSpy.mockRestore()
+      })
+    })
+
+    describe('when the transaction has no timestamp (V2)', () => {
+      it('should set the timestamp to the current time', () => {
+        const dateSpy = jest.spyOn(Date, 'now').mockReturnValue(1000000)
+
+        const v2Transaction = {
+          ...transaction,
+          version: 2,
+          expiration: 0
+        }
+
+        delete v2Transaction.timestamp
+
+        wrapper.vm.storeTransaction(v2Transaction)
+        expectTransactionStored(v2Transaction, Date.now())
+
+        dateSpy.mockRestore()
+      })
     })
   })
 })

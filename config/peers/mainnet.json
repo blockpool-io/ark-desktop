@@ -1,12 +1,6 @@
-[
-      { "ip": "169.54.170.34", "port": 9031, "isHttps": false, "version": "2" },
-      { "ip": "169.54.170.37", "port": 9031, "isHttps": false, "version": "2" },
-      { "ip": "169.54.170.38", "port": 9031, "isHttps": false, "version": "2" },
-      { "ip": "169.54.170.43", "port": 9031, "isHttps": false, "version": "2" },
-      { "ip": "169.54.170.45", "port": 9031, "isHttps": false, "version": "2" },
-      { "ip": "169.54.170.36", "port": 9031, "isHttps": false, "version": "2" },
-      { "ip": "169.54.170.40", "port": 9031, "isHttps": false, "version": "2" },
-      { "ip": "169.54.170.35", "port": 9031, "isHttps": false, "version": "2" },
-      { "ip": "169.54.170.44", "port": 9031, "isHttps": false, "version": "2" },
-      { "ip": "169.54.170.42", "port": 9031, "isHttps": false, "version": "2" }
-  ]
+[{
+  "ip": "169.54.170.41",
+  "port": 9030,
+  "isHttps": false,
+  "version": "2"
+}]

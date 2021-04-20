@@ -1,8 +1,12 @@
 <template>
   <div
     v-click-outside="emitClose"
-    :class="isHorizontal ? 'AppSidemenuPlugins--horizontal' : 'AppSidemenuPlugins'"
-    class="absolute z-20"
+    :class="{
+      'AppSidemenuPlugins--horizontal': isHorizontal,
+      'AppSidemenuPlugins': !isHorizontal,
+      'AppSidemenuPlugins--single': pluginMenuItems.length === 1
+    }"
+    class="absolute z-20 theme-dark"
   >
     <MenuOptions
       :is-horizontal="isHorizontal"
@@ -10,23 +14,17 @@
       :single-column="false"
       class="whitespace-no-wrap"
     >
-      <div
-        v-for="(columnItems, columnId) in pluginMenuItems"
-        :key="columnId"
-      >
-        <MenuOptionsItem
-          v-for="(menuItem, menuId) in columnItems"
-          :key="menuId"
-          :title="menuItem.title"
-          @click="navigateToRoute(menuItem.routeName)"
-        />
-      </div>
+      <MenuOptionsItem
+        v-for="(menuItem, menuId) in pluginMenuItems"
+        :key="menuId"
+        :title="menuItem.title"
+        @click="navigateToRoute(menuItem.routeName)"
+      />
     </MenuOptions>
   </div>
 </template>
 
 <script>
-import chunk from 'lodash/chunk'
 import { MenuOptions, MenuOptionsItem } from '@/components/Menu'
 
 export default {
@@ -48,24 +46,18 @@ export default {
       type: Boolean,
       required: false,
       default: false
-    },
-
-    itemsPerColumn: {
-      type: Number,
-      required: false,
-      default: 5
     }
   },
 
   computed: {
     pluginMenuItems () {
-      return chunk(this.$store.getters['plugin/menuItems'], this.itemsPerColumn)
+      return this.$store.getters['plugin/menuItems']
     }
   },
 
   methods: {
     navigateToRoute (routeName) {
-      this.$emit('close')
+      this.$emit('close', true)
       this.$router.push({ name: routeName })
     },
 
@@ -84,14 +76,20 @@ export default {
   top: 19rem;
   transform: translateY(-10%);
 }
+.AppSidemenuPlugins .MenuOptions {
+  @apply .flex-col .max-h-xs .overflow-y-auto;
+}
 
-.AppSidemenuPlugins .MenuOptions--vertical:after {
-  top: 6.5rem;
+.AppSidemenuPlugins--single {
+  top: 22.2rem;
 }
 
 .AppSidemenuPlugins--horizontal {
   width: 300px;
   right: 8.5rem;
   top: 5.75rem;
+}
+.AppSidemenuPlugins--horizontal .MenuOptions {
+  @apply .flex-col .max-h-xs .overflow-y-auto;
 }
 </style>

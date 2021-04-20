@@ -37,7 +37,7 @@
               {{ profile.name | truncate(12) }}
             </div>
 
-            <span class="font-bold my-2 text-lg">
+            <span class="ProfileAll__grid__profile__balance">
               {{ profileBalance(profile) }}
             </span>
 
@@ -78,7 +78,7 @@
 </template>
 
 <script>
-import { map, mapValues, sortBy, uniqBy } from 'lodash'
+import { mapValues, sortBy, uniqBy } from 'lodash'
 import { ProfileAvatar, ProfileRemovalConfirmation } from '@/components/Profile'
 
 export default {
@@ -147,7 +147,7 @@ export default {
         })
       }
       const sorted = sortBy(balances, ['amount', 'formatted'])
-      return map(sorted, 'formatted').reverse()
+      return sorted.map(sort => sort.formatted).reverse()
     }
   },
 
@@ -205,6 +205,10 @@ export default {
 }
 .ProfileAll__grid__profile__name {
   width: var(--profile-avatar-xl);
+}
+.ProfileAll__grid__profile__balance {
+  max-width: 10rem;
+  @apply .font-bold .my-2 .text-lg .truncate .inline-block;
 }
 
 .ProfileAll .ProfileAvatar {

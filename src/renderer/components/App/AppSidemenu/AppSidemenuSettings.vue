@@ -30,8 +30,8 @@
           >
             <MenuDropdown
               ref="currency-menu"
+              container-classes="theme-light"
               :items="currencies"
-              :position="['-40%', '5%']"
               :value="sessionCurrency"
               @select="setCurrency"
             />
@@ -52,8 +52,8 @@
             <MenuDropdown
               v-if="pluginThemes"
               ref="theme-menu"
+              container-classes="theme-light whitespace-no-wrap"
               :items="themes"
-              :position="['-40%', '5%']"
               :value="sessionTheme"
               @select="setTheme"
             />
@@ -123,6 +123,13 @@
         </MenuOptionsItem>
 
         <MenuOptionsItem
+          v-if="blacklist.length"
+          :title="$t('APP_SIDEMENU.SETTINGS.MANAGE_BLACKLIST')"
+          class="text-grey-light"
+          @click="toggleManageBlacklistModal"
+        />
+
+        <MenuOptionsItem
           :title="$t('APP_SIDEMENU.SETTINGS.RESET_DATA.TITLE')"
           class="text-grey-light"
           @click="toggleResetDataModal"
@@ -149,28 +156,37 @@
           @cancel="toggleResetDataModal"
           @continue="onResetData"
         />
+
+        <PluginManageBlacklistModal
+          v-if="isManageBlacklistModalOpen"
+          :blacklist="blacklist"
+          @close="toggleManageBlacklistModal"
+        />
       </MenuOptions>
     </div>
   </div>
 </template>
 
 <script>
+import os from 'os'
+import { MARKET } from '@config'
+import { isEmpty } from '@/utils'
 import { ModalConfirmation } from '@/components/Modal'
 import { MenuNavigationItem, MenuOptions, MenuOptionsItem, MenuDropdown } from '@/components/Menu'
 import { ButtonSwitch } from '@/components/Button'
-import { isEmpty, isString } from 'lodash'
-const os = require('os')
+import { PluginManageBlacklistModal } from '@/components/PluginManager/PluginManagerModals'
 
 export default {
   name: 'AppSidemenuOptionsSettings',
 
   components: {
-    ModalConfirmation,
+    ButtonSwitch,
+    MenuDropdown,
     MenuNavigationItem,
     MenuOptions,
     MenuOptionsItem,
-    MenuDropdown,
-    ButtonSwitch
+    ModalConfirmation,
+    PluginManageBlacklistModal
   },
 
   props: {
@@ -188,12 +204,21 @@ export default {
 
   data: () => ({
     isResetDataModalOpen: false,
+    isManageBlacklistModalOpen: false,
     isScreenshotProtectionModalOpen: false,
     isSettingsVisible: false,
     saveOnProfile: false
   }),
 
   computed: {
+    isAllowedToClose () {
+      return this.outsideClick &&
+        !(
+          this.isResetDataModalOpen ||
+          this.isScreenshotProtectionModalOpen ||
+          this.isManageBlacklistModalOpen
+        )
+    },
     isLinux () {
       // You can find the possible options here: https://nodejs.org/api/os.html#os_os_platform
       return os.platform() !== 'darwin' && os.platform() !== 'win32'
@@ -202,10 +227,13 @@ export default {
       return this.session_network && this.session_network.market && this.session_network.market.enabled
     },
     currencies () {
-      return this.$store.getters['market/currencies']
+      return Object.keys(MARKET.currencies)
     },
     backgroundUpdateLedger () {
       return this.$store.getters['session/backgroundUpdateLedger']
+    },
+    blacklist () {
+      return [...this.$store.getters['plugin/blacklisted'].local].sort()
     },
     sessionCurrency: {
       get () {
@@ -283,7 +311,17 @@ export default {
         : this.$store.getters['plugin/themes']
     },
     themes () {
-      return ['light', 'dark', ...Object.keys(this.pluginThemes)]
+      const pluginThemes = {}
+
+      for (const [themeId, config] of Object.entries(this.pluginThemes)) {
+        pluginThemes[themeId] = config.name
+      }
+
+      return {
+        light: this.$t('COMMON.THEMES.LIGHT'),
+        dark: this.$t('COMMON.THEMES.DARK'),
+        ...pluginThemes
+      }
     }
   },
 
@@ -305,7 +343,7 @@ export default {
     },
 
     setTheme (theme) {
-      this.sessionTheme = isString(theme) ? theme : (theme ? 'dark' : 'light')
+      this.sessionTheme = typeof theme === 'string' ? theme : (theme ? 'dark' : 'light')
     },
 
     setBackgroundUpdateLedger (update) {
@@ -332,6 +370,10 @@ export default {
       this.isResetDataModalOpen = !this.isResetDataModalOpen
     },
 
+    toggleManageBlacklistModal () {
+      this.isManageBlacklistModalOpen = !this.isManageBlacklistModalOpen
+    },
+
     async onResetData () {
       await this.$store.dispatch('resetData')
       this.electron_reload()
@@ -344,7 +386,7 @@ export default {
     },
 
     emitClose () {
-      if (this.outsideClick && !(this.isResetDataModalOpen || this.isScreenshotProtectionModalOpen)) {
+      if (this.isAllowedToClose) {
         this.closeShowSettings()
       }
     }

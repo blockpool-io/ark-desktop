@@ -38,23 +38,17 @@
                   :label="$t('PAGES.PROFILE_NEW.STEP1.NAME')"
                   :is-invalid="$v.schema.name.$dirty && $v.schema.name.$invalid"
                   :helper-text="nameError"
-                  class="flex-1 mr-5"
+                  class="flex-1"
                   name="name"
                 />
+              </div>
 
+              <div class="flex mb-5">
                 <InputSelect
                   v-model="currency"
                   :items="currencies"
                   :label="$t('COMMON.CURRENCY')"
                   name="currency"
-                  class="flex-1"
-                />
-              </div>
-
-              <div class="flex mb-5">
-                <InputLanguage
-                  v-model="language"
-                  name="language"
                   class="flex-1 mr-5"
                 />
 
@@ -67,17 +61,25 @@
                 />
               </div>
 
-              <div class="flex mb-5 w-1/2 ProfileNew__time-format-container">
+              <div class="flex mb-5">
                 <InputSelect
                   v-model="timeFormat"
                   :items="timeFormats"
                   :label="$t('COMMON.TIME_FORMAT')"
                   name="time-format"
+                  class="flex-1 mr-5"
+                />
+
+                <InputSelect
+                  v-model="priceApi"
+                  :items="priceApis"
+                  :label="$t('COMMON.PRICE_PROVIDER')"
+                  name="price-api"
                   class="flex-1"
                 />
               </div>
 
-              <div class="flex items-center justify-between mt-5 pt-5 mb-2 border-t border-theme-line-separator border-dashed">
+              <div class="ProfileNew__avatar flex items-center justify-between mt-5 pt-5 mb-2 border-t border-theme-line-separator border-dashed">
                 <div class="mr-2">
                   <h5 class="mb-2">
                     {{ $t('COMMON.AVATAR') }}
@@ -111,20 +113,20 @@
                 :networks="defaultNetworks"
                 @select="selectNetwork"
               />
-              <div v-if="availableCustomNetworks.length">
-                <p class="mt-5 mb-1 text-theme-page-text font-semibold">
-                  {{ $t('PAGES.PROFILE_NEW.STEP2.CUSTOM_NETWORK') }}
-                </p>
-                <p class="text-theme-page-text-light mb-5">
-                  {{ $t('PAGES.PROFILE_NEW.STEP2.CUSTOM_NETWORK_EXPLAIN') }}
-                </p>
-                <SelectionNetwork
-                  :selected="selectedNetwork"
-                  :networks="availableCustomNetworks"
-                  :is-custom="true"
-                  @select="selectNetwork"
-                />
-              </div>
+
+              <p class="mt-5 mb-1 text-theme-page-text font-semibold">
+                {{ $t('PAGES.PROFILE_NEW.STEP2.CUSTOM_NETWORK') }}
+              </p>
+              <p class="text-theme-page-text-light mb-5">
+                {{ $t('PAGES.PROFILE_NEW.STEP2.CUSTOM_NETWORK_EXPLAIN') }}
+              </p>
+              <SelectionNetwork
+                :selected="selectedNetwork"
+                :networks="availableCustomNetworks"
+                :is-custom="true"
+                :add-button="true"
+                @select="selectNetwork"
+              />
             </div>
           </MenuStepItem>
 
@@ -167,7 +169,7 @@
                 />
               </div>
 
-              <div class="flex items-center justify-between">
+              <div class="ProfileNew__background flex items-center justify-between">
                 <div>
                   <h5 class="mb-2">
                     {{ $t('COMMON.BACKGROUND') }}
@@ -190,11 +192,11 @@
 </template>
 
 <script>
-import { BIP39, NETWORKS } from '@config'
+import { BIP39, I18N, MARKET, NETWORKS } from '@config'
 import Profile from '@/models/profile'
 import { ButtonSwitch } from '@/components/Button'
 import { MenuStep, MenuStepItem } from '@/components/Menu'
-import { InputLanguage, InputSelect, InputText } from '@/components/Input'
+import { InputSelect, InputText } from '@/components/Input'
 import { SelectionAvatar, SelectionBackground, SelectionNetwork, SelectionTheme } from '@/components/Selection'
 
 export default {
@@ -202,7 +204,6 @@ export default {
 
   components: {
     ButtonSwitch,
-    InputLanguage,
     InputSelect,
     InputText,
     MenuStep,
@@ -227,14 +228,6 @@ export default {
       },
       set (background) {
         this.selectBackground(background)
-      }
-    },
-    language: {
-      get () {
-        return this.$store.getters['session/language']
-      },
-      set (language) {
-        this.selectLanguage(language)
       }
     },
     bip39Language: {
@@ -277,8 +270,16 @@ export default {
         this.selectTimeFormat(timeFormat)
       }
     },
+    priceApi: {
+      get () {
+        return this.$store.getters['session/priceApi'] || 'coingecko'
+      },
+      set (priceApi) {
+        this.selectPriceApi(priceApi)
+      }
+    },
     currencies () {
-      return this.$store.getters['market/currencies']
+      return Object.keys(MARKET.currencies)
     },
     bip39Languages () {
       return BIP39.languages.reduce((all, language) => {
@@ -292,6 +293,13 @@ export default {
         all[format] = this.$t(`TIME_FORMAT.${format.toUpperCase()}`)
         return all
       }, {})
+    },
+    priceApis () {
+      return {
+        coingecko: 'CoinGecko',
+        cryptocompare: 'CryptoCompare',
+        coincap: 'CoinCap'
+      }
     },
     defaultNetworks () {
       return NETWORKS.map(network => network)
@@ -324,13 +332,14 @@ export default {
    * Reuse the settings of the current profile every time the page is created
    */
   created () {
-    this.selectNetwork(this.defaultNetworks.find(network => network.id === 'bpl.mainnet'))
+    this.selectNetwork(this.defaultNetworks.find(network => network.id === 'ark.mainnet'))
     this.schema.background = this.background
     this.schema.bip39Language = this.bip39Language
     this.schema.currency = this.currency
     this.schema.isMarketChartEnabled = this.isMarketChartEnabled
-    this.schema.language = this.language
+    this.schema.language = I18N.defaultLocale
     this.schema.timeFormat = this.timeFormat
+    this.schema.priceApi = this.priceApi
 
     // In case we came from a profile using a plugin theme, revert back to default
     const defaultThemes = ['light', 'dark']
@@ -388,11 +397,6 @@ export default {
       this.schema.currency = currency
     },
 
-    selectLanguage (language) {
-      this.schema.language = language
-      this.$store.dispatch('session/setLanguage', language)
-    },
-
     selectBip39Language (bip39Language) {
       this.schema.bip39Language = bip39Language
       this.$store.dispatch('session/setBip39Language', bip39Language)
@@ -422,11 +426,16 @@ export default {
     async selectTimeFormat (timeFormat) {
       this.schema.timeFormat = timeFormat
       await this.$store.dispatch('session/setTimeFormat', timeFormat)
+    },
+
+    async selectPriceApi (priceApi) {
+      this.schema.priceApi = priceApi
+      await this.$store.dispatch('session/setPriceApi', priceApi)
     }
   },
 
   validations: {
-    step1: ['schema.avatar', 'schema.currency', 'schema.language', 'schema.name'],
+    step1: ['schema.avatar', 'schema.currency', 'schema.bip39Language', 'schema.name'],
     step2: ['schema.networkId'],
     schema: {
       name: {
@@ -439,9 +448,14 @@ export default {
 }
 </script>
 
-<style scoped>
-.ProfileNew__time-format-container {
-  /* To produce the exact same width  (.pr-5 class / 2) */
-  padding-right: 0.625rem
+<style lang="postcss">
+.ProfileNew__avatar .SelectionAvatar .InputGrid__container button:first-child,
+.ProfileNew__avatar .SelectionAvatar .InputGrid__container button:first-child .InputGridItem {
+  @apply .cursor-default .opacity-100;
+}
+
+.ProfileNew__background .SelectionBackgroundGrid .InputGrid__container button:first-child,
+.ProfileNew__background .SelectionBackgroundGrid .InputGrid__container button:first-child .InputGridItem {
+  @apply .cursor-default .opacity-100;
 }
 </style>

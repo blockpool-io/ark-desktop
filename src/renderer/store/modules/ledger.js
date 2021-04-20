@@ -2,7 +2,9 @@ import cryptoLibrary from 'crypto'
 import { keyBy } from 'lodash'
 import logger from 'electron-log'
 import Vue from 'vue'
-import { Identities } from '@blockpool-io/crypto'
+import semver from 'semver'
+import { Identities } from '@arkecosystem/crypto'
+import i18n from '@/i18n'
 import eventBus from '@/plugins/event-bus'
 import ledgerService from '@/services/ledger-service'
 
@@ -14,13 +16,17 @@ export default {
     isConnected: false,
     wallets: {},
     walletCache: {},
-    loadingProcesses: {}
+    loadingProcesses: {},
+    needsUpdate: false,
+    ensureConnection: false
   },
 
   getters: {
     isLoading: state => Object.keys(state.loadingProcesses).length,
     shouldStopLoading: state => processId => state.loadingProcesses[processId],
     isConnected: state => state.isConnected,
+    needsUpdate: state => state.needsUpdate,
+    isEnsureConnectionRunning: state => state.ensureConnection,
     wallets: state => Object.values(state.wallets),
     walletsObject: state => state.wallets,
     wallet: state => (address) => {
@@ -46,6 +52,14 @@ export default {
       }
 
       return []
+    },
+    byProfileId: (state, getters, __, rootGetters) => profileId => {
+      const profile = rootGetters['profile/byId'](profileId)
+      const network = rootGetters['session/network']
+
+      return getters.wallets.filter(wallet => {
+        return wallet.profileId === profileId && profile.networkId === network.id
+      })
     }
   },
 
@@ -55,9 +69,17 @@ export default {
       state.isConnected = false
       state.wallets = {}
       state.loadingProcesses = {}
+      state.needsUpdate = false
+      state.ensureConnection = false
     },
     SET_SLIP44 (state, slip44) {
       state.slip44 = slip44
+    },
+    SET_NEEDS_UPDATE (state, needsUpdate) {
+      state.needsUpdate = needsUpdate
+    },
+    SET_ENSURE_CONNECTION (state, ensureConnection) {
+      state.ensureConnection = ensureConnection
     },
     SET_LOADING (state, processId) {
       Vue.set(state.loadingProcesses, processId, false)
@@ -128,22 +150,57 @@ export default {
      * Initialise ledger service with ark-ledger library.
      * @param {Number} slip44
      */
-    async init ({ dispatch }, slip44) {
+    async init ({ dispatch, getters }, slip44) {
       dispatch('setSlip44', slip44)
       dispatch('ensureConnection')
+
+      const neededUpdate = getters.needsUpdate
+      await dispatch('updateVersion')
+
+      if (!getters.needsUpdate && neededUpdate !== getters.needsUpdate) {
+        eventBus.emit('ledger:connected')
+      }
+    },
+
+    /**
+     * Update flag to determine if ledger app needs update.
+     */
+    async updateVersion ({ commit, dispatch, rootGetters, state }) {
+      if (!state.isConnected) {
+        return
+      }
+
+      const network = rootGetters['session/network']
+
+      let needsUpdate = false
+      if (network.constants && network.constants.aip11 && semver.lt(await dispatch('getVersion'), '1.2.0')) {
+        needsUpdate = true
+      }
+
+      commit('SET_NEEDS_UPDATE', needsUpdate)
+
+      if (needsUpdate) {
+        this._vm.$error(i18n.t('LEDGER.NEEDS_UPDATE'), 10000)
+      }
     },
 
     /**
      * Try connecting to ledger device.
      * @return {Boolean} true if connected, false if failed
      */
-    async connect ({ commit, dispatch }) {
+    async connect ({ commit, dispatch, getters }) {
       if (!await ledgerService.connect()) {
         return false
       }
 
       commit('SET_CONNECTED', true)
-      eventBus.emit('ledger:connected')
+
+      await dispatch('updateVersion')
+
+      if (!getters.needsUpdate) {
+        eventBus.emit('ledger:connected')
+      }
+
       await dispatch('reloadWallets', {})
 
       return true
@@ -154,6 +211,7 @@ export default {
      * @return {void}
      */
     async disconnect ({ commit, dispatch }) {
+      await commit('STOP_ALL_LOADING_PROCESSES')
       commit('SET_CONNECTED', false)
       await ledgerService.disconnect()
       eventBus.emit('ledger:disconnected')
@@ -167,7 +225,13 @@ export default {
      * @param  {Number} [obj.delay=2000] Delay in between connection attempts.
      * @return {void}
      */
-    async ensureConnection ({ commit, state, dispatch }, { delay } = { delay: 2000 }) {
+    async ensureConnection ({ commit, dispatch, getters, state }, { delay, reRun } = { delay: 2000, reRun: false }) {
+      if (!reRun && getters.isEnsureConnectionRunning) {
+        return
+      }
+
+      commit('SET_ENSURE_CONNECTION', true)
+
       if (state.isConnected && !await dispatch('checkConnected')) {
         await dispatch('disconnect')
         delay = 2000
@@ -180,7 +244,7 @@ export default {
       }
 
       setTimeout(() => {
-        dispatch('ensureConnection', { delay })
+        dispatch('ensureConnection', { delay, reRun: true })
       }, delay)
     },
 
@@ -217,11 +281,11 @@ export default {
       { commit, dispatch, getters, rootGetters },
       { clearFirst, forceLoad, quantity } = { clearFirst: false, forceLoad: false, quantity: null }
     ) {
-      if (!getters['isConnected']) {
+      if (!getters.isConnected) {
         return {}
       }
 
-      if (getters['isLoading']) {
+      if (getters.isLoading) {
         if (!forceLoad) {
           return {}
         }
@@ -229,36 +293,62 @@ export default {
         await commit('STOP_ALL_LOADING_PROCESSES')
       }
 
-      const profileId = rootGetters['session/profileId']
-      const currentWallets = getters['wallets']
-      const processId = cryptoLibrary.randomBytes(12).toString('base64')
-
-      if (clearFirst) {
-        commit('SET_WALLETS', {})
-        eventBus.emit('ledger:wallets-updated', {})
-      } else if (currentWallets.length) {
-        quantity = currentWallets.length
-      }
-      commit('SET_LOADING', processId)
-      const firstWallet = await dispatch('getWallet', 0)
-      const cachedWallets = keyBy(getters['cachedWallets'](firstWallet.address), 'address')
       let wallets = {}
-      let startIndex = 0
-      if (!quantity && Object.keys(cachedWallets).length) {
-        wallets = cachedWallets
-        startIndex = Object.keys(cachedWallets).length - 2
-      }
-
-      // Note: We only batch if search endpoint available, otherwise we would
-      //       be doing unnecessary API calls for potentially cold wallets.
-      let batchIncrement = 1
-      if (this._vm.$client.isCapable('2.1.0')) {
-        batchIncrement = startIndex === 0 ? 10 : 2
-      }
-
+      const processId = cryptoLibrary.randomBytes(12).toString('base64')
       try {
+        const profileId = rootGetters['session/profileId']
+
+        if (clearFirst) {
+          commit('SET_WALLETS', {})
+          eventBus.emit('ledger:wallets-updated', {})
+        }
+
+        commit('SET_LOADING', processId)
+        const firstWallet = await dispatch('getWallet', 0)
+        const currentWallets = getters.walletsObject
+        const cachedWallets = getters.cachedWallets(firstWallet.address)
+        let startIndex = 0
+        if (cachedWallets.length) {
+          let returnWallets = false
+          if (!quantity || quantity > cachedWallets.length) {
+            wallets = keyBy(cachedWallets, 'address')
+            startIndex = Math.max(0, cachedWallets.length - 1)
+          } else if (quantity < cachedWallets.length) {
+            wallets = keyBy(cachedWallets.slice(0, quantity), 'address')
+            returnWallets = true
+          } else {
+            wallets = keyBy(cachedWallets, 'address')
+            returnWallets = true
+          }
+
+          if (returnWallets) {
+            if (getters.shouldStopLoading(processId)) {
+              commit('CLEAR_LOADING_PROCESS', processId)
+
+              return {}
+            }
+
+            commit('SET_WALLETS', wallets)
+            eventBus.emit('ledger:wallets-updated', wallets)
+            commit('CLEAR_LOADING_PROCESS', processId)
+            dispatch('cacheWallets')
+
+            return wallets
+          }
+        } else if (currentWallets && Object.keys(currentWallets).length) {
+          startIndex = Object.keys(currentWallets).length - 1
+          wallets = { ...currentWallets }
+        }
+
+        let batchIncrement = 10
+        if (quantity && Math.abs(quantity - startIndex) < 10) {
+          batchIncrement = Math.abs(quantity - startIndex)
+        } else if (!quantity && Object.keys(wallets).length > 0) {
+          batchIncrement = 2
+        }
+
         for (let ledgerIndex = startIndex; ; ledgerIndex += batchIncrement) {
-          if (getters['shouldStopLoading'](processId)) {
+          if (getters.shouldStopLoading(processId)) {
             commit('CLEAR_LOADING_PROCESS', processId)
 
             return {}
@@ -277,22 +367,8 @@ export default {
             }
           }
 
-          let walletData = []
-          if (batchIncrement > 1) {
-            walletData = await this._vm.$client.fetchWallets(ledgerWallets.map(wallet => wallet.address))
-          } else {
-            try {
-              walletData = [await this._vm.$client.fetchWallet(ledgerWallets[0].address)]
-            } catch (error) {
-              logger.error(error)
-              const message = error.response ? error.response.body.message : error.message
-              if (message !== 'Wallet not found') {
-                throw error
-              }
-            }
-          }
-
           let hasCold = false
+          const walletData = await this._vm.$client.fetchWallets(ledgerWallets.map(wallet => wallet.address))
           const filteredWallets = []
           for (const ledgerWallet of ledgerWallets) {
             const wallet = walletData.find(wallet => wallet.address === ledgerWallet.address)
@@ -330,7 +406,7 @@ export default {
         logger.error(error)
       }
 
-      if (getters['shouldStopLoading'](processId)) {
+      if (getters.shouldStopLoading(processId)) {
         commit('CLEAR_LOADING_PROCESS', processId)
 
         return {}
@@ -347,21 +423,21 @@ export default {
     /**
      * Store ledger wallets in the cache.
      */
-    async updateWallet ({ commit, dispatch, getters, rootGetters }, updatedWallet) {
+    async updateWallet ({ commit, dispatch, getters }, updatedWallet) {
       commit('SET_WALLET', updatedWallet)
-      eventBus.emit('ledger:wallets-updated', getters['walletsObject'])
+      eventBus.emit('ledger:wallets-updated', getters.walletsObject)
       dispatch('cacheWallets')
     },
 
     /**
      * Store several Ledger wallets at once and cache them.
      */
-    async updateWallets ({ commit, dispatch, getters, rootGetters }, walletsToUpdate) {
+    async updateWallets ({ commit, dispatch, getters }, walletsToUpdate) {
       commit('SET_WALLETS', {
-        ...getters['walletsObject'],
+        ...getters.walletsObject,
         ...walletsToUpdate
       })
-      eventBus.emit('ledger:wallets-updated', getters['walletsObject'])
+      eventBus.emit('ledger:wallets-updated', getters.walletsObject)
       dispatch('cacheWallets')
     },
 
@@ -373,7 +449,7 @@ export default {
     async cacheWallets ({ commit, getters, rootGetters }) {
       if (rootGetters['session/ledgerCache']) {
         commit('CACHE_WALLETS', {
-          wallets: getters['wallets'],
+          wallets: getters.wallets,
           profileId: rootGetters['session/profileId']
         })
       }
@@ -386,6 +462,22 @@ export default {
      */
     async clearWalletCache ({ commit, rootGetters }) {
       commit('CLEAR_WALLET_CACHE', rootGetters['session/profileId'])
+    },
+
+    /**
+     * Get address and public key from ledger wallet.
+     * @param  {Number} accountIndex Index of wallet to get data for.
+     * @return {Promise<string>}
+     */
+    async getVersion ({ dispatch }) {
+      try {
+        return await dispatch('action', {
+          action: 'getVersion'
+        })
+      } catch (error) {
+        logger.error(error)
+        throw new Error(`Could not get version: ${error}`)
+      }
     },
 
     /**
@@ -425,7 +517,7 @@ export default {
     /**
      * Get public key from ledger wallet.
      * @param  {Number} [accountIndex] Index of wallet to get public key for.
-     * @return {(String|Boolean)}
+     * @return {Promise<string>}
      */
     async getPublicKey ({ dispatch }, accountIndex) {
       try {
@@ -440,22 +532,82 @@ export default {
     },
 
     /**
-     * Sign transaction for ledger wallet.
-     * @param {Object} obj
-     * @param  {String} obj.transactionHex Hex of transaction.
+     * Sign transaction for ledger wallet using ecdsa signatures.
+     * @param  {Object} obj
+     * @param  {Buffer} obj.transactionBytes Bytes of transaction.
      * @param  {Number} obj.accountIndex Index of wallet to sign transaction for.
-     * @return {(String|Boolean)}
+     * @return {Promise<string>}
      */
-    async signTransaction ({ dispatch }, { transactionHex, accountIndex } = {}) {
+    async signTransaction ({ dispatch }, { transactionBytes, accountIndex } = {}) {
       try {
         return await dispatch('action', {
           action: 'signTransaction',
           accountIndex,
-          data: transactionHex
+          data: transactionBytes
         })
       } catch (error) {
         logger.error(error)
         throw new Error(`Could not sign transaction: ${error}`)
+      }
+    },
+
+    /**
+     * Sign transaction for ledger wallet using schnorr signatures.
+     * @param  {Object} obj
+     * @param  {String} obj.transactionBytes Bytes of transaction.
+     * @param  {Number} obj.accountIndex Index of wallet to sign transaction for.
+     * @return {(String|Boolean)}
+     */
+    async signTransactionWithSchnorr ({ dispatch }, { transactionBytes, accountIndex } = {}) {
+      try {
+        return await dispatch('action', {
+          action: 'signTransactionWithSchnorr',
+          accountIndex,
+          data: transactionBytes
+        })
+      } catch (error) {
+        logger.error(error)
+        throw new Error(`Could not sign transaction: ${error}`)
+      }
+    },
+
+    /**
+     * Sign message for ledger wallet using ecdsa signatures.
+     * @param  {Object} obj
+     * @param  {Buffer} obj.messageBytes Bytes to sign.
+     * @param  {Number} obj.accountIndex Index of wallet to sign transaction for.
+     * @return {Promise<string>}
+     */
+    async signMessage ({ dispatch }, { messageBytes, accountIndex } = {}) {
+      try {
+        return await dispatch('action', {
+          action: 'signMessage',
+          accountIndex,
+          data: messageBytes
+        })
+      } catch (error) {
+        logger.error(error)
+        throw new Error(`Could not sign message: ${error}`)
+      }
+    },
+
+    /**
+     * Sign message for ledger wallet using schnorr signatures.
+     * @param  {Object} obj
+     * @param  {String} obj.messageBytes Bytes to sign.
+     * @param  {Number} obj.accountIndex Index of wallet to sign transaction for.
+     * @return {(String|Boolean)}
+     */
+    async signMessageWithSchnorr ({ dispatch }, { messageBytes, accountIndex } = {}) {
+      try {
+        return await dispatch('action', {
+          action: 'signMessageWithSchnorr',
+          accountIndex,
+          data: messageBytes
+        })
+      } catch (error) {
+        logger.error(error)
+        throw new Error(`Could not sign message: ${error}`)
       }
     },
 
@@ -468,7 +620,7 @@ export default {
      * @return {String}
      */
     async action ({ state, dispatch, rootGetters }, { action, accountIndex, data } = {}) {
-      if (accountIndex === undefined || !Number.isFinite(accountIndex)) {
+      if (action !== 'getVersion' && (accountIndex === undefined || !Number.isFinite(accountIndex))) {
         throw new Error('accountIndex must be a Number')
       }
 
@@ -482,7 +634,7 @@ export default {
       const path = `44'/${state.slip44}'/${accountIndex || 0}'/0/0`
       const actions = {
         async getWallet () {
-          const { publicKey } = await ledgerService.getWallet(path)
+          const publicKey = await ledgerService.getPublicKey(path)
           const network = rootGetters['session/network']
 
           return {
@@ -491,16 +643,28 @@ export default {
           }
         },
         async getAddress () {
-          const { publicKey } = await ledgerService.getWallet(path)
+          const publicKey = await ledgerService.getPublicKey(path)
           const network = rootGetters['session/network']
 
           return Identities.Address.fromPublicKey(publicKey, network.version)
         },
         async getPublicKey () {
-          return (await ledgerService.getWallet(path)).publicKey
+          return ledgerService.getPublicKey(path)
         },
         async signTransaction () {
-          return (await ledgerService.signTransaction(path, data)).signature
+          return ledgerService.signTransaction(path, data)
+        },
+        async signTransactionWithSchnorr () {
+          return ledgerService.signTransactionWithSchnorr(path, data)
+        },
+        async signMessage () {
+          return ledgerService.signMessage(path, data)
+        },
+        async signMessageWithSchnorr () {
+          return ledgerService.signMessageWithSchnorr(path, data)
+        },
+        async getVersion () {
+          return ledgerService.getVersion()
         }
       }
 

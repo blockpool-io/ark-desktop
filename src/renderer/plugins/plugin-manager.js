@@ -3,7 +3,7 @@ import PluginWrapper from '@/components/Plugin/PluginWrapper'
 
 export default {
   install (Vue) {
-    Vue.component('Bpl', PluginWrapper)
+    Vue.component('Ark', PluginWrapper)
     pluginManager.setVue(Vue.extend())
     Vue.prototype.$plugins = pluginManager
   }

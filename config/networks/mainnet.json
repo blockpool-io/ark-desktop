@@ -1,10 +1,10 @@
 {
-  "id": "bpl.mainnet",
+  "id": "ark.mainnet",
   "name": "Blockpool",
   "title": "Blockpool",
   "server": "http://api.mainnet.blockpool.io:9031",
   "description": "Blockpool Mainnet",
-  "imagePath": "networks/bpl.testnet.svg",
+  "imagePath": "networks/default.svg",
   "apiVersion": 2,
   "slip44": "111",
   "market": {
@@ -53,7 +53,7 @@
     "maxLength": 255
   },
   "nethash": "585bdcc1c4434beab47078224c707072ef7dd8927187e2b8632907fb8b6d5153",
-  "explorer": "http://explorer.mainnet.blockpool.io",
+  "explorer": "http://explorer.blockpool.io",
   "token": "BPL",
   "subunit": "blocktoshi",
   "symbol": "β",

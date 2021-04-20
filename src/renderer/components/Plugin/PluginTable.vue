@@ -136,7 +136,7 @@ export default {
       this.$emit('on-sort-change', sortOptions[0])
     },
 
-    sortByPermissions (x, y, col, rowX, rowY) {
+    sortByPermissions (x, y) {
       const values = []
 
       for (const perms of [x, y]) {

@@ -22,17 +22,21 @@ jest.mock('@/store', () => {
             return null
         }
       }),
-      'session/lastFeeByType': jest.fn(type => {
-        switch (type) {
-          case 0:
-            return 10000000
-          case 1:
-            return undefined
-          case 3:
-            return 100000000
-          default:
-            return null
+      'session/lastFeeByType': jest.fn((type, typeGroup) => {
+        if (typeGroup === 1) {
+          switch (type) {
+            case 0:
+              return 10000000
+            case 1:
+              return undefined
+            case 3:
+              return 100000000
+            default:
+              return null
+          }
         }
+
+        return null
       })
     }
   }
@@ -125,17 +129,29 @@ describe('InputFee', () => {
     expect(buttons).toHaveLength(5)
   })
 
+  it('should set the default chosen fee if available when created', () => {
+    const wrapper = mountComponent({
+      mocks: {
+        session_profile: {
+          defaultChosenFee: 'LAST'
+        }
+      }
+    })
+
+    expect(wrapper.vm.chosenFee).toBe('LAST')
+  })
+
   describe('maxV1fee', () => {
     it('should uses V1 configuration', () => {
       let wrapper = mountComponent({
         propsData: { transactionType: 0 }
       })
-      expect(wrapper.vm.maxV1fee).toEqual(V1.fees[0])
+      expect(wrapper.vm.maxV1fee).toEqual(V1.fees.GROUP_1[0])
 
       wrapper = mountComponent({
         propsData: { transactionType: 3 }
       })
-      expect(wrapper.vm.maxV1fee).toEqual(V1.fees[3])
+      expect(wrapper.vm.maxV1fee).toEqual(V1.fees.GROUP_1[3])
     })
   })
 
@@ -259,67 +275,33 @@ describe('InputFee', () => {
   })
 
   describe('prepareFeeStatistics', () => {
-    describe('when the average fee of the network is more than the V1 fee', () => {
+    describe('when any fee of the network is more than the V1 max fee', () => {
       beforeEach(() => {
         mockNetwork.feeStatistics = [{
           type: 0,
           fees: {
-            avgFee: 1000 * 1e8,
-            maxFee: 0.03 * 1e8,
-            minFee: 0.0006 * 1e8
-          }
-        }]
-      })
-
-      it('should use the V1 fee as average always', () => {
-        const wrapper = mountComponent()
-
-        expect(wrapper.vm.feeChoices.AVERAGE).toBeInstanceOf(BigNumber)
-        expect(wrapper.vm.feeChoices.AVERAGE.toString()).toEqual('0.1')
-      })
-    })
-
-    describe('when the average fee of the network is less than the V1 fee', () => {
-      beforeEach(() => {
-        mockNetwork.feeStatistics = [{
-          type: 0,
-          fees: {
-            avgFee: 0.0048 * 1e8,
-            maxFee: 0.03 * 1e8,
-            minFee: 0.0006 * 1e8
-          }
-        }]
-      })
-
-      it('should use it as average', () => {
-        const wrapper = mountComponent()
-
-        expect(wrapper.vm.feeChoices.AVERAGE).toBeInstanceOf(BigNumber)
-        expect(wrapper.vm.feeChoices.AVERAGE).toBeWithin(0.0048, 0.0048000001)
-      })
-    })
-
-    describe('when the maximum fee of the network is more than the V1 fee', () => {
-      beforeEach(() => {
-        mockNetwork.feeStatistics = [{
-          type: 0,
-          fees: {
-            avgFee: 0.0048 * 1e8,
+            avgFee: 900 * 1e8,
             maxFee: 1000 * 1e8,
-            minFee: 0.0006 * 1e8
+            minFee: 800 * 1e8
           }
         }]
       })
 
-      it('should use the V1 fee as maximum always', () => {
+      it('should use the V1 max fee', () => {
         const wrapper = mountComponent()
+
+        const maxV1fee = new BigNumber(wrapper.vm.maxV1fee * 1e-8)
 
         expect(wrapper.vm.feeChoices.MAXIMUM).toBeInstanceOf(BigNumber)
-        expect(wrapper.vm.feeChoices.MAXIMUM.toString()).toEqual('0.1')
+        expect(wrapper.vm.feeChoices.MAXIMUM).toEqual(maxV1fee)
+        expect(wrapper.vm.feeChoices.AVERAGE).toBeInstanceOf(BigNumber)
+        expect(wrapper.vm.feeChoices.AVERAGE).toEqual(maxV1fee)
+        expect(wrapper.vm.feeChoices.MINIMUM).toBeInstanceOf(BigNumber)
+        expect(wrapper.vm.feeChoices.MINIMUM).toEqual(maxV1fee)
       })
     })
 
-    describe('when the maximum fee of the network is less than the V1 fee', () => {
+    describe('when any fee of the network is less than the V1 max fee', () => {
       beforeEach(() => {
         mockNetwork.feeStatistics = [{
           type: 0,
@@ -331,11 +313,15 @@ describe('InputFee', () => {
         }]
       })
 
-      it('should use it as maximum', () => {
+      it('should use it as the fee', () => {
         const wrapper = mountComponent()
 
         expect(wrapper.vm.feeChoices.MAXIMUM).toBeInstanceOf(BigNumber)
         expect(wrapper.vm.feeChoices.MAXIMUM).toBeWithin(0.03, 0.03000001)
+        expect(wrapper.vm.feeChoices.AVERAGE).toBeInstanceOf(BigNumber)
+        expect(wrapper.vm.feeChoices.AVERAGE).toBeWithin(0.0048, 0.00480001)
+        expect(wrapper.vm.feeChoices.MINIMUM).toBeInstanceOf(BigNumber)
+        expect(wrapper.vm.feeChoices.MINIMUM).toBeWithin(0.0006, 0.00060001)
       })
     })
 
@@ -344,11 +330,20 @@ describe('InputFee', () => {
         mockNetwork.feeStatistics = []
       })
 
-      it('should use it as maximum', () => {
+      it('should use V1 max fee for maximum', () => {
         const wrapper = mountComponent()
 
+        const maxV1fee = (wrapper.vm.maxV1fee * 1e-8).toString()
+
         expect(wrapper.vm.feeChoices.MAXIMUM).toBeInstanceOf(BigNumber)
-        expect(wrapper.vm.feeChoices.MAXIMUM.toString()).toBe('0.1')
+        expect(wrapper.vm.feeChoices.MAXIMUM.toString()).toBe(maxV1fee)
+      })
+
+      it('should use the absolute minimum fee (0.00000001) for minimum', () => {
+        const wrapper = mountComponent()
+
+        expect(wrapper.vm.feeChoices.MINIMUM).toBeInstanceOf(BigNumber)
+        expect(wrapper.vm.feeChoices.MINIMUM.toString()).toBe('0.00000001')
       })
     })
   })
@@ -384,6 +379,30 @@ describe('InputFee', () => {
           wrapper.vm.fee = '1'
           expect(wrapper.vm.insufficientFundsError).toBeNull()
         })
+      })
+    })
+  })
+
+  describe('erasing the input', () => {
+    describe('events', () => {
+      it('should not change on raw', () => {
+        const wrapper = mountComponent()
+        const input = wrapper.find("input[name='fee']")
+
+        // Cannot use setValue, since it triggers the input event and vue-test-utils don't provide the emitter.
+        input.element.value = '0.0000'
+        input.trigger('raw')
+        expect(input.element.value).toBe('0.0000')
+      })
+
+      it('should change on input', () => {
+        const wrapper = mountComponent()
+        const input = wrapper.find("input[name='fee']")
+
+        // Manually triggers the input event for the input.
+        input.element.value = '0.0000'
+        input.trigger('input')
+        expect(input.element.value).toBe('0')
       })
     })
   })

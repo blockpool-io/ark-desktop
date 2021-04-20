@@ -19,7 +19,7 @@
         :name="name"
         :disabled="isDisabled"
         :type="passwordIsVisible ? 'text' : 'password'"
-        class="InputPassword__input flex flex-grow bg-transparent text-theme-page-text"
+        class="InputPassword__input flex flex-grow bg-transparent text-theme-page-text mr-2"
         @blur="onBlur"
         @focus="onFocus"
       >
@@ -179,8 +179,13 @@ export default {
       this.$v.$reset()
     },
 
-    toggleVisible () {
+    touch () {
+      this.$v.model.$touch()
+    },
+
+    async toggleVisible () {
       this.passwordIsVisible = !this.passwordIsVisible
+      await this.focus()
     },
 
     passwordFeedback () {
@@ -190,9 +195,21 @@ export default {
 
       if (this.minLength && this.model.length < this.minLength) {
         return this.$t('VALIDATION.PASSWORD.TOO_SHORT', [this.minLength])
-      } else if (!this.model.match(/[0-9]+/)) {
+      }
+
+      if (!this.model.match(/[a-z]/)) {
+        return this.$t('VALIDATION.PASSWORD.LOWER_CASE')
+      }
+
+      if (!this.model.match(/[A-Z]/)) {
+        return this.$t('VALIDATION.PASSWORD.UPPER_CASE')
+      }
+
+      if (!this.model.match(/[0-9]/)) {
         return this.$t('VALIDATION.PASSWORD.NUMBERS')
-      } else if (!this.model.match(/[^a-zA-Z0-9]+/)) {
+      }
+
+      if (!this.model.match(/\W|_/)) {
         return this.$t('VALIDATION.PASSWORD.SPECIAL_CHARACTERS')
       }
 
@@ -213,21 +230,28 @@ export default {
         return true
       },
       isValid (value) {
-        if (!this.isRequired && !this.model.length) {
-          return true
-        } else if (!this.isCreate) {
-          return true
-        }
-
-        if (this.minLength && this.model.length < this.minLength) {
-          return false
-        } else if (!this.model.match(/[0-9]+/)) {
-          return false
-        } else if (!this.model.match(/[^a-zA-Z0-9]+/)) {
+        if (!value) {
           return false
         }
 
-        return true
+        if (!this.isRequired && !value.length) {
+          return true
+        }
+
+        if (!this.isCreate) {
+          return true
+        }
+
+        if (this.minLength && value.length < this.minLength) {
+          return false
+        }
+
+        const containsLowercase = /[a-z]/.test(value)
+        const containsUppercase = /[A-Z]/.test(value)
+        const containsNumbers = /[0-9]/.test(value)
+        const containsSpecial = /\W|_/.test(value)
+
+        return containsLowercase && containsUppercase && containsNumbers && containsSpecial
       }
     }
   }

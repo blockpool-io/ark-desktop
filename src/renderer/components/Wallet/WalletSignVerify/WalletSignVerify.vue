@@ -1,11 +1,6 @@
 <template>
   <div class="mx-4 overflow-hidden">
     <div class="flex flex-row pb-5 border-b border-dashed border-theme-line-separator">
-      <WalletIdenticon
-        :value="currentWallet.address"
-        :size="75"
-      />
-
       <div class="flex flex-col justify-center pl-4">
         <span class="font-bold">
           {{ $t('SIGN_VERIFY.VERIFY_WALLET') }}
@@ -94,7 +89,7 @@
 
 <script>
 import { ButtonClipboard, ButtonModal } from '@/components/Button'
-import { WalletIdenticon, WalletSignModal, WalletVerifyModal } from '../'
+import { WalletSignModal, WalletVerifyModal } from '@/components/Wallet'
 import SvgIcon from '@/components/SvgIcon'
 import { clone } from 'lodash'
 
@@ -104,7 +99,6 @@ export default {
   components: {
     ButtonClipboard,
     ButtonModal,
-    WalletIdenticon,
     SvgIcon,
     WalletSignModal,
     WalletVerifyModal
@@ -146,14 +140,14 @@ export default {
     },
 
     copyMessage (value) {
-      var message = clone(value, false)
-      delete message['timestamp']
-      delete message['address']
+      const message = clone(value, false)
+      delete message.timestamp
+      delete message.address
       return JSON.stringify(message)
     },
 
     deleteMessage (value) {
-      var message = clone(value, false)
+      const message = clone(value, false)
       this.$store.dispatch('wallet/deleteSignedMessage', message)
     },
 

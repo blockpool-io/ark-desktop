@@ -1,5 +1,31 @@
 import electron from 'electron'
-import { readFile, writeFile } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
+import path from 'path'
+import os from 'os'
+
+const validatePath = (parentPath, filePath) => {
+  const relative = path.relative(parentPath, filePath)
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative)
+}
+
+const parseFilters = filters => {
+  if (typeof filters === 'string') {
+    filters = [filters]
+  }
+
+  if (Array.isArray(filters) && filters.length) {
+    if (filters.every(filter => typeof filter === 'string')) {
+      return filters.map(filter => ({
+        name: filter.toUpperCase(), extensions: [filter]
+      }))
+    }
+  }
+
+  return filters || [
+    { name: 'JSON', extensions: ['json'] },
+    { name: 'All Files', extensions: ['*'] }
+  ]
+}
 
 export default {
   methods: {
@@ -12,46 +38,41 @@ export default {
       win.reload()
     },
 
-    electron_writeFile (raw, defaultPath, options = {}) {
-      const filters = options.filters || [
-        { name: 'JSON', extensions: ['json'] },
-        { name: 'All Files', extensions: ['*'] }
-      ]
+    async electron_writeFile (raw, defaultPath, options = {}) {
+      const filters = parseFilters(options.filters)
 
-      return new Promise((resolve, reject) => {
-        electron.remote.dialog.showSaveDialog({
-          defaultPath,
-          filters
-        }, fileName => {
-          if (!fileName) return
-
-          writeFile(fileName, raw, 'utf8', err => {
-            if (err) reject(err)
-            resolve(fileName)
-          })
-        })
+      const { filePath } = await electron.remote.dialog.showSaveDialog({
+        defaultPath,
+        filters
       })
+
+      if (!filePath) return
+
+      if (options.restrictToPath && !validatePath(options.restrictToPath, filePath)) {
+        throw new Error(`Path "${filePath}" not allowed`)
+      }
+
+      writeFileSync(filePath, raw, 'utf8')
+
+      return filePath
     },
 
-    electron_readFile (options = {}) {
-      const filters = options.filters || [
-        { name: 'JSON', extensions: ['json'] },
-        { name: 'All Files', extensions: ['*'] }
-      ]
+    async electron_readFile (defaultPath, options = {}) {
+      const filters = parseFilters(options.filters)
 
-      return new Promise((resolve, reject) => {
-        electron.remote.dialog.showOpenDialog({
-          properties: ['openFile'],
-          filters
-        }, filePaths => {
-          if (!filePaths) return
-
-          readFile(filePaths[0], 'utf8', (err, data) => {
-            if (err) reject(err)
-            resolve(data)
-          })
-        })
+      const { filePaths } = await electron.remote.dialog.showOpenDialog({
+        defaultPath: defaultPath || os.homedir(),
+        properties: ['openFile'],
+        filters
       })
+
+      if (!filePaths || !filePaths.length) return
+
+      if (options.restrictToPath && !validatePath(options.restrictToPath, filePaths[0])) {
+        throw new Error(`Path "${filePaths[0]}" not allowed`)
+      }
+
+      return readFileSync(filePaths[0], 'utf8')
     }
   }
 }

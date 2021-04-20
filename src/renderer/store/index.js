@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import VuexPersistence from 'vuex-persist'
 import localforage from 'localforage'
-import { isNull, pullAll, keys } from 'lodash'
+import { merge, pullAll } from 'lodash'
 
 import packageJson from '@package.json'
 
+import { VuexPersistence } from '@/store/plugins/vuex-persist'
 import vuexPersistReady from '@/store/plugins/vuex-persist-ready'
 import VuexPersistMigrations from '@/store/plugins/vuex-persist-migrations'
 import AnnouncementsModule from '@/store/modules/announcements'
@@ -19,6 +19,7 @@ import PluginModule from '@/store/modules/plugin'
 import ProfileModule from '@/store/modules/profile'
 import SessionModule from '@/store/modules/session'
 import TransactionModule from '@/store/modules/transaction'
+import UpdaterModule from '@/store/modules/updater'
 import WalletModule from '@/store/modules/wallet'
 
 Vue.use(Vuex)
@@ -35,27 +36,37 @@ const modules = {
   profile: ProfileModule,
   session: SessionModule,
   transaction: TransactionModule,
+  updater: UpdaterModule,
   wallet: WalletModule
 }
-
-// Modules that should not be persisted
-const ignoreModules = []
 
 const vuexMigrations = new VuexPersistMigrations({
   untilVersion: packageJson.version,
   fromVersion (store) {
     const version = store.getters['app/latestAppliedMigration']
-    return isNull(version) ? '0.0.0' : version
+    return version === null ? '0.0.0' : version
   }
 })
 
+const modulesWithoutPersistence = pullAll(Object.keys(modules), ['delegate', 'market', 'updater'])
+
 const vuexPersist = new VuexPersistence({
-  // It is necessary to enable the strict mode to watch to mutations, such as `RESTORE_MUTATION`
-  strictMode: true,
-  asyncStorage: true,
-  key: 'bpl-desktop',
+  key: 'ark-desktop',
   storage: localforage,
-  modules: pullAll(keys(modules), ignoreModules)
+  reducer: state => {
+    const networks = Object.values(state.network.all).concat(
+      Object.values(state.network.customNetworks)
+    )
+
+    for (const network of networks) {
+      delete network.crypto
+    }
+
+    return modulesWithoutPersistence.reduce(
+      (a, i) => merge(a, { [i]: state[i] }),
+      {}
+    )
+  }
 })
 
 export default new Vuex.Store({

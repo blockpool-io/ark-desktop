@@ -1,9 +1,19 @@
-import moment from 'moment'
+import { dayjs } from '@/services/datetime'
+import prettyBytes from 'pretty-bytes'
 
 export default {
   methods: {
-    formatter_percentage (value) {
-      return `${this.$n(value, { minimumFractionDigits: 2 })}%`
+    formatter_bytes (value) {
+      return prettyBytes(value)
+    },
+
+    formatter_percentage (value, minimumFractionDigits = 2, maximumFractionDigits = null) {
+      const options = {
+        minimumFractionDigits,
+        ...(maximumFractionDigits && { maximumFractionDigits })
+      }
+
+      return `${this.$n(value, options)}%`
     },
 
     formatter_networkCurrency (value, digits) {
@@ -24,7 +34,25 @@ export default {
      * @return {String}
      */
     formatter_date (value, format = null) {
-      moment.locale(window.navigator.userLanguage || window.navigator.language)
+      let userLanguage =
+        (window.navigator.userLanguage || window.navigator.language).toLowerCase() || 'en'
+
+      const [language, region] = userLanguage.split('-')
+
+      if (
+        (language === 'en' && region === 'us') ||
+        language === region
+      ) {
+        userLanguage = language
+      }
+
+      try {
+        require(`dayjs/locale/${userLanguage}`)
+      } catch {
+        userLanguage = 'en'
+      }
+
+      dayjs.locale(userLanguage)
 
       if (!format) {
         const sessionFormat = this.session_profile.timeFormat
@@ -36,7 +64,8 @@ export default {
           format = 'L LTS'
         }
       }
-      return moment(value).format(format)
+
+      return dayjs(value).format(format)
     }
   }
 }

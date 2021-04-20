@@ -28,6 +28,7 @@
         :is-disabled="isDisabled"
         :wallet-network="walletNetwork"
         class="w-full InputField--dirty"
+        @change="onChange"
         @raw="onRawInput"
       />
     </div>
@@ -57,7 +58,7 @@
     </p>
 
     <div
-      v-if="isStaticFee && !isAdvancedFee"
+      v-if="!hideStaticFeeNotice && isStaticFee && !isAdvancedFee"
       class="mt-6 mb-4"
     >
       {{ $t(`INPUT_FEE.UNIQUE`, { fee: parseFloat(fee) }) }}
@@ -92,6 +93,12 @@ export default {
       required: true
     },
 
+    transactionGroup: {
+      type: Number,
+      required: false,
+      default: 1
+    },
+
     showInsufficientFunds: {
       type: Boolean,
       required: false,
@@ -114,6 +121,12 @@ export default {
       type: Object,
       required: false,
       default: null
+    },
+
+    hideStaticFeeNotice: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   },
 
@@ -145,8 +158,8 @@ export default {
       return this.$t('INPUT_FEE.ERROR.NOT_VALID')
     },
     maxV1fee () {
-      const defaultMaxV1Fee = V1.fees[this.transactionType]
-      const staticFee = this.$store.getters['transaction/staticFee'](this.transactionType)
+      const defaultMaxV1Fee = V1.fees[`GROUP_${this.transactionGroup}`][this.transactionType]
+      const staticFee = this.$store.getters['transaction/staticFee'](this.transactionType, this.transactionGroup)
       return staticFee || defaultMaxV1Fee
     },
     isStaticFee () {
@@ -167,35 +180,46 @@ export default {
       }
 
       const { feeStatistics } = this.feeNetwork
-      const transactionStatistics = feeStatistics.find(feeConfig => feeConfig.type === this.transactionType)
-      if (transactionStatistics) {
-        return transactionStatistics.fees
+      if (feeStatistics) {
+        let transactionStatistics
+        if (feeStatistics[0]) {
+          transactionStatistics = Object.values(feeStatistics).find(feeConfig => feeConfig.type === this.transactionType)
+        } else if (feeStatistics[this.transactionGroup]) {
+          transactionStatistics = Object.values(feeStatistics[this.transactionGroup]).find(feeConfig => feeConfig.type === this.transactionType)
+        }
+
+        if (transactionStatistics) {
+          return transactionStatistics.fees
+        }
       }
 
       return {
         avgFee: this.maxV1fee,
-        maxFee: this.maxV1fee
+        maxFee: this.maxV1fee,
+        minFee: 1
       }
     },
     lastFee () {
-      return this.$store.getters['session/lastFeeByType'](this.transactionType)
+      return this.$store.getters['session/lastFeeByType'](this.transactionType, this.transactionGroup)
     },
     feeChoiceMin () {
-      return this.feeChoices.MINIMUM
+      return this.currency_subToUnit(1)
     },
     feeChoiceMax () {
       return this.isAdvancedFee ? this.feeChoices.MAXIMUM.multipliedBy(10) : this.feeChoices.MAXIMUM
     },
     feeChoices () {
-      const { avgFee, maxFee } = this.feeStatistics
+      const { avgFee, maxFee, minFee } = this.feeStatistics
 
-      // Even if the network provides average or maximum fees higher than V1, they will be corrected
+      // If any of the fees are higher than the maximum V1 fee, than use the maximum.
       const average = this.currency_subToUnit(avgFee < this.maxV1fee ? avgFee : this.maxV1fee)
+      const minimum = this.currency_subToUnit(minFee < this.maxV1fee ? minFee : this.maxV1fee)
+      const maximum = this.currency_subToUnit(maxFee < this.maxV1fee ? maxFee : this.maxV1fee)
 
       const fees = {
-        MINIMUM: this.currency_subToUnit(1),
+        MINIMUM: minimum,
         AVERAGE: average,
-        MAXIMUM: this.currency_subToUnit(maxFee < this.maxV1fee ? maxFee : this.maxV1fee),
+        MAXIMUM: maximum,
         INPUT: average,
         ADVANCED: average
       }
@@ -203,7 +227,7 @@ export default {
       return this.lastFee ? Object.assign({}, { LAST: this.currency_subToUnit(this.lastFee) }, fees) : fees
     },
     minimumError () {
-      const min = this.feeChoices.MINIMUM
+      const min = this.feeChoiceMin
       const fee = this.currency_format(min, { currency: this.currency, currencyDisplay: 'code' })
       return this.$t('INPUT_FEE.ERROR.LESS_THAN_MINIMUM', { fee })
     },
@@ -242,11 +266,17 @@ export default {
     }
   },
 
+  watch: {
+    transactionType () {
+      this.triggerTypeUpdate()
+    }
+  },
+
   created () {
     // Fees should be synchronized only when this component is active
     this.$synchronizer.appendFocus('fees')
 
-    this.emitFee(this.feeChoices.AVERAGE)
+    this.triggerTypeUpdate()
   },
 
   beforeDestroy () {
@@ -254,6 +284,13 @@ export default {
   },
 
   methods: {
+    triggerTypeUpdate () {
+      if (this.lastFee && this.session_profile.defaultChosenFee === 'LAST') {
+        this.onChoice(this.session_profile.defaultChosenFee)
+      } else {
+        this.emitFee(this.feeChoices.AVERAGE)
+      }
+    },
     focusInput () {
       this.$refs.input.focus()
     },
@@ -266,6 +303,16 @@ export default {
       const fee = this.feeChoices[choice]
       this.emitFee(fee)
     },
+
+    /**
+     * Emit the value after the user finishes changes. This prevents premature parsing the input.
+     * @param {(String|Number)} fee
+     */
+    onChange (fee) {
+      fee = fee.toString()
+      this.emitFee(fee)
+    },
+
     /**
      * Receives the `InputCurrency` value as String
      * @param {String} fee
@@ -277,7 +324,6 @@ export default {
 
       fee = fee.toString()
       this.$set(this.feeChoices, this.chosenFee, fee)
-      this.emitFee(fee)
     },
     /**
      * The native slider uses Strings
@@ -314,7 +360,7 @@ export default {
 
   validations: {
     fee: {
-      isValid (value) {
+      isValid () {
         if (this.$refs.input) {
           return !this.$refs.input.$v.$invalid && !this.insufficientFundsError
         }

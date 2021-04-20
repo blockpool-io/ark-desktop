@@ -60,13 +60,13 @@
 
 <script>
 import { required } from 'vuelidate/lib/validators'
+import Cycled from 'cycled'
+import { orderBy } from 'lodash'
+import { isEmpty } from '@/utils'
 import { ButtonModal } from '@/components/Button'
 import ModalQrCodeScanner from '@/components/Modal/ModalQrCodeScanner'
 import { MenuDropdown } from '@/components/Menu'
-import Cycled from 'cycled'
 import InputField from './InputField'
-import truncate from '@/filters/truncate'
-import { includes, isEmpty, map, orderBy } from 'lodash'
 
 export default {
   name: 'InputDelegate',
@@ -120,7 +120,7 @@ export default {
     },
 
     delegates () {
-      return this.$store.getters['delegate/bySessionNetwork']
+      return Object.values(this.$store.getters['delegate/bySessionNetwork'] || {})
     },
 
     error () {
@@ -168,7 +168,7 @@ export default {
         return []
       }
 
-      const delegates = map(this.delegates, (object) => {
+      const delegates = this.delegates.map(object => {
         const delegate = {
           name: null,
           username: object.username,
@@ -176,7 +176,7 @@ export default {
           publicKey: object.publicKey
         }
 
-        delegate.name = `${truncate(object.username, 25)} (${this.wallet_truncate(object.address)})`
+        delegate.name = `${object.username} (${this.wallet_truncate(object.address)})`
 
         return delegate
       })
@@ -185,9 +185,9 @@ export default {
         return object.name || object.address.toLowerCase()
       })
 
-      return results.reduce((delegates, delegate, index) => {
+      return results.reduce((delegates, delegate) => {
         Object.values(delegate).forEach(prop => {
-          if (includes(prop.toLowerCase(), this.inputValue.toLowerCase())) {
+          if (prop.toLowerCase().includes(this.inputValue.toLowerCase())) {
             delegates[delegate.username] = delegate.name
           }
         })
@@ -239,11 +239,14 @@ export default {
       this.$refs.input.focus()
     },
 
-    onBlur (evt) {
+    onBlur (event) {
       // Verifies that the element that generated the blur was a dropdown item
-      if (evt.relatedTarget) {
-        const classList = evt.relatedTarget.classList || []
-        const isDropdownItem = includes(classList, 'MenuDropdownItem__button')
+      if (event.relatedTarget) {
+        const classList = event.relatedTarget.classList
+
+        const isDropdownItem = classList && typeof classList.contains === 'function'
+          ? classList.contains('MenuDropdownItem__button')
+          : false
 
         if (!isDropdownItem) {
           this.closeDropdown()
@@ -306,7 +309,9 @@ export default {
         this.$error(this.$t('MODAL_QR_SCANNER.DECODE_FAILED', { data: value }))
       }
 
-      this.model = this.$store.getters['delegate/byAddress'](address).username
+      const delegate = this.$store.getters['delegate/byAddress'](address)
+      this.model = delegate ? delegate.username : address
+
       this.$nextTick(() => {
         this.closeDropdown()
         toggle()

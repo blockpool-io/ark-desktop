@@ -58,7 +58,22 @@
         </div>
 
         <div
-          v-else-if="data.column.field === 'delegate'"
+          v-else-if="data.column.field === 'multisignature'"
+          class="flex items-center justify-center"
+        >
+          <span>
+            <SvgIcon
+              v-if="data.row.multiSignature"
+              v-tooltip="$t('PAGES.WALLET.MULTI_SIGNATURE_WALLET')"
+              class="w-5 h-5 text-theme-heading-text"
+              name="multi-signature"
+              view-box="0 0 16 16"
+            />
+          </span>
+        </div>
+
+        <div
+          v-else-if="data.column.field === 'vote'"
         >
           <span class="flex items-center">
             {{ getDelegateProperty(data.row.vote, 'username') }}
@@ -69,7 +84,7 @@
                   delegate: getDelegateProperty(data.row.vote, 'username'),
                   rank: getDelegateProperty(data.row.vote, 'rank')
                 }),
-                trigger:'hover'
+                trigger: 'hover'
               }"
               class="bg-theme-button-special-choice cursor-pointer rounded-full w-2 h-2 ml-2"
             />
@@ -177,8 +192,16 @@ export default {
           tdClass: !this.showVotedDelegates ? 'w-full' : ''
         },
         {
+          label: '',
+          field: 'multisignature',
+          sortable: false,
+          thClass: 'text-center not-sortable',
+          tdClass: 'text-center'
+        },
+        {
           label: this.$t('PAGES.WALLET_ALL.VOTING_FOR'),
-          field: 'delegate',
+          field: 'vote',
+          sortFn: this.sortByVote,
           thClass: 'w-full whitespace-no-wrap',
           tdClass: 'w-full'
         },
@@ -198,9 +221,7 @@ export default {
       ]
 
       if (!this.showVotedDelegates) {
-        const index = columns.findIndex(el => {
-          return el.field === 'delegate'
-        })
+        const index = columns.findIndex(el => el.field === 'delegate')
         columns.splice(index, 1)
       }
 
@@ -220,6 +241,13 @@ export default {
     sortByName (x, y, col, rowX, rowY) {
       const a = rowX.name || this.wallet_name(rowX.address) || ''
       const b = rowY.name || this.wallet_name(rowY.address) || ''
+
+      return a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true })
+    },
+
+    sortByVote (x, y) {
+      const a = x ? this.getDelegateProperty(x, 'username') : ''
+      const b = y ? this.getDelegateProperty(y, 'username') : ''
 
       return a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true })
     },

@@ -1,5 +1,6 @@
 import path from 'path'
-import { flatten, upperCase, sortBy } from 'lodash'
+import { sortBy } from 'lodash'
+import { flatten } from '@/utils'
 import imageManager from '@/services/image-manager'
 
 export default {
@@ -16,7 +17,7 @@ export default {
      * the image path and its filename as title.
      */
     images () {
-      const componentName = upperCase(this.$options.name).replace(' ', '_')
+      const componentName = this.strings_snakeCase(this.$options.name).toUpperCase()
       const groups = imageManager.tree
 
       return this.categories.reduce((all, category) => {

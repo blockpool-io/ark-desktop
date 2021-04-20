@@ -53,49 +53,67 @@
                     {{ $t('COMMON.LEDGER') }}
                   </span>
                 </div>
-                <span
-                  class="font-bold mt-2 text-lg text-theme-page-text text-left whitespace-no-wrap"
-                >
-                  {{ formatter_networkCurrency(wallet.balance, 2) }}
-                </span>
+                <div class="text-left">
+                  <span
+                    class="font-bold mt-2 text-lg text-theme-page-text text-left whitespace-no-wrap"
+                  >
+                    {{ formatter_networkCurrency(wallet.balance, 2) }}
+                  </span>
+                  <span
+                    v-if="isMarketEnabled"
+                    class="text-xs font-bold text-theme-page-text-light ml-1"
+                  >
+                    {{ getAlternativeBalance(wallet.balance) }}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <MenuDropdown
-              :ref="`dropdown-${wallet.id}`"
-              :items="contextMenuOptions(wallet)"
-              :is-highlighting="false"
-              :position="['-100%', '-20%']"
-              :container-classes="'hidden group-hover:block'"
-              @select="onSelectDropdown(wallet, $event)"
-            >
-              <span
-                slot="handler"
-                class="WalletGrid__wallet__select p-2 text-theme-page-text-light hover:text-theme-page-text opacity-75"
-              >
-                <SvgIcon
-                  name="more"
-                  view-box="0 0 5 15"
-                  class="text-inherit"
-                />
-              </span>
+            <div class="flex items-center">
+              <SvgIcon
+                v-if="wallet.multiSignature"
+                v-tooltip="$t('PAGES.WALLET.MULTI_SIGNATURE_WALLET')"
+                class="w-5 h-5 text-theme-heading-text mr-2"
+                name="multi-signature"
+                view-box="0 0 16 16"
+              />
 
-              <template
-                slot="item"
-                slot-scope="itemScope"
+              <MenuDropdown
+                :ref="`dropdown-${wallet.id}`"
+                :items="contextMenuOptions(wallet)"
+                :is-highlighting="false"
+                :position="{ x: '100%', y: '-0.5rem' }"
+                :container-classes="'hidden group-hover:block'"
+                @select="onSelectDropdown(wallet, $event)"
               >
-                <div class="flex items-center hidden">
+                <span
+                  slot="handler"
+                  class="WalletGrid__wallet__select p-2 text-theme-page-text-light hover:text-theme-page-text opacity-75"
+                >
                   <SvgIcon
-                    :name="itemScope.item.icon"
-                    view-box="0 0 16 16"
-                    class="text-inherit flex-none mr-2"
+                    name="more"
+                    view-box="0 0 5 15"
+                    class="text-inherit"
                   />
-                  <span class="font-semibold">
-                    {{ itemScope.item.value }}
-                  </span>
-                </div>
-              </template>
-            </MenuDropdown>
+                </span>
+
+                <template
+                  slot="item"
+                  slot-scope="itemScope"
+                >
+                  <div class="flex items-center hidden">
+                    <SvgIcon
+                      :name="itemScope.item.icon"
+                      view-box="0 0 16 16"
+                      class="text-inherit flex-none mr-2"
+                    />
+                    <span class="font-semibold">
+                      {{ itemScope.item.value }}
+                    </span>
+                  </div>
+                </template>
+              </MenuDropdown>
+            </div>
           </div>
         </div>
       </div>
@@ -132,7 +150,27 @@ export default {
     }
   },
 
+  computed: {
+    isMarketEnabled () {
+      return this.session_network.market.enabled
+    },
+
+    alternativeCurrency () {
+      return this.$store.getters['session/currency']
+    },
+
+    price () {
+      return this.$store.getters['market/lastPrice']
+    }
+  },
+
   methods: {
+    getAlternativeBalance (balance) {
+      const unitBalance = this.currency_subToUnit(balance)
+      const price = this.price || 0
+      return this.currency_format(unitBalance * price, { currency: this.alternativeCurrency })
+    },
+
     contextMenuOptions (wallet) {
       const options = {
         rename: {
@@ -142,7 +180,7 @@ export default {
       }
 
       if (!wallet.isLedger) {
-        options['delete'] = {
+        options.delete = {
           value: this.$t('WALLET_TABLE.DELETE'),
           icon: 'delete-wallet'
         }

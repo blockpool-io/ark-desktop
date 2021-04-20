@@ -1,8 +1,8 @@
-import BigNumber from 'bignumber.js'
+import BigNumberInstance from 'bignumber.js'
 
 // Avoid scientific notation
 // https://github.com/MikeMcl/bignumber.js/blob/master/bignumber.d.ts#L97
-BigNumber.config({ DECIMAL_PLACES: 8, EXPONENTIAL_AT: 1e+9 })
+const BigNumber = BigNumberInstance.clone({ DECIMAL_PLACES: 8, EXPONENTIAL_AT: 1e+9 })
 
 export class NumberBuilder {
   /**
@@ -67,6 +67,14 @@ export class NumberBuilder {
   multiply (value) {
     this.value = this.value.multipliedBy(value)
     return this
+  }
+
+  /**
+   * @param {Number|String|BigNumber} value
+   * @returns Boolean
+   */
+  isEqualTo (value) {
+    return this.value.eq(value)
   }
 
   /**

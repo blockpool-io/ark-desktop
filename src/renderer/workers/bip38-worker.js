@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 'use strict'
 
 const bip38 = require('bip38')
 const wif = require('wif')
-const { Identities } = require('@blockpool-io/crypto')
+const { Identities } = require('@arkecosystem/crypto')
 
 process.on('message', message => {
   if (message.passphrase) {

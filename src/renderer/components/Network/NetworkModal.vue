@@ -11,6 +11,7 @@
         v-if="showFull"
         v-model="configChoice"
         :choices="configChoices"
+        :selected-choice="configChoice"
         @select="onChoiceSelect"
       />
       <div
@@ -84,6 +85,16 @@
               />
 
               <InputText
+                ref="input-version"
+                v-model="$v.form.version.$model"
+                :label="$t('MODAL_NETWORK.VERSION')"
+                :is-invalid="$v.form.version.$dirty && $v.form.version.$invalid"
+                :helper-text="versionError"
+                class="mt-5"
+                name="version"
+              />
+
+              <InputText
                 ref="input-epoch"
                 v-model="$v.form.epoch.$model"
                 :label="$t('MODAL_NETWORK.EPOCH')"
@@ -103,6 +114,16 @@
                 :helper-text="explorerError"
                 class="mt-5"
                 name="explorer"
+              />
+
+              <InputText
+                ref="input-known-wallets-url"
+                v-model="$v.form.knownWalletsUrl.$model"
+                :label="$t('MODAL_NETWORK.KNOWN_WALLETS_URL')"
+                :is-invalid="$v.form.knownWalletsUrl.$dirty && $v.form.knownWalletsUrl.$invalid"
+                :helper-text="knownWalletsUrlError"
+                class="mt-5"
+                name="knownWalletsUrl"
               />
 
               <InputText
@@ -198,11 +219,13 @@
 </template>
 
 <script>
-import { numeric, required, requiredIf } from 'vuelidate/lib/validators'
+import { numeric, required, requiredIf, url } from 'vuelidate/lib/validators'
+import { NETWORKS } from '@config'
 import { InputText, InputToggle } from '@/components/Input'
 import { ModalLoader, ModalWindow } from '@/components/Modal'
 import ClientService from '@/services/client'
-import cryptoCompare from '@/services/crypto-compare'
+import priceApi from '@/services/price-api'
+import { URL } from 'url'
 
 const requiredIfFull = requiredIf(function () { return this.showFull })
 
@@ -236,13 +259,14 @@ export default {
       nethash: '',
       token: '',
       symbol: '',
+      version: '',
       explorer: '',
+      knownWalletsUrl: '',
       epoch: '',
       wif: '',
       slip44: '',
       activeDelegates: '',
-      ticker: '',
-      version: ''
+      ticker: ''
     },
     configChoices: [
       'Basic',
@@ -295,6 +319,10 @@ export default {
       return this.requiredFieldError(this.$v.form.slip44, this.$refs['input-slip44'])
     },
 
+    versionError () {
+      return this.requiredNumericFieldError(this.$v.form.version, this.$refs['input-version'])
+    },
+
     wifError () {
       return this.requiredNumericFieldError(this.$v.form.wif, this.$refs['input-wif'])
     },
@@ -309,6 +337,10 @@ export default {
 
     explorerError () {
       return this.requiredUrlFieldError(this.$v.form.explorer, this.$refs['input-explorer'])
+    },
+
+    knownWalletsUrlError () {
+      return this.requiredValidFieldError(this.$v.form.knownWalletsUrl, this.$refs['input-known-wallets-url'])
     },
 
     nethashError () {
@@ -331,14 +363,37 @@ export default {
       this.form.nethash = this.network.nethash
       this.form.token = this.network.token
       this.form.symbol = this.network.symbol
+
+      // Temporary block to patch networks missing "version" - address prefix
+      if (this.network.version) {
+        this.form.version = this.network.version.toString()
+      } else {
+        const networkConfig = NETWORKS.find(network => network.id === this.network.id)
+
+        if (networkConfig) {
+          this.form.version = networkConfig.version.toString()
+        } else {
+          try {
+            ClientService.fetchNetworkConfig(this.form.server)
+              .then(network => {
+                this.form.version = network.version.toString()
+                this.$error(this.$t('MODAL_NETWORK.ADDRESS_VERSION_MISSING'))
+              })
+          } catch (error) {
+            this.form.version = '0'
+          }
+        }
+      }
+
       this.form.explorer = this.network.explorer || ''
+      this.form.knownWalletsUrl = this.network.knownWalletsUrl || ''
 
       this.form.epoch = this.network.constants.epoch
 
       // Default advanced values: ?
       this.form.wif = this.getStringOrDefault(this.network.wif, '170')
       this.form.slip44 = this.getStringOrDefault(this.network.slip44, '1')
-      this.form.activeDelegates = this.getStringOrDefault(this.network.activeDelegates, '201')
+      this.form.activeDelegates = this.getStringOrDefault(this.network.activeDelegates, '51')
       this.form.ticker = this.network.market.ticker || ''
 
       this.showFull = true
@@ -406,26 +461,34 @@ export default {
     async validateSeed () {
       this.showLoadingModal = true
 
-      const matches = /(https?:\/\/[a-zA-Z0-9.-_]+):([0-9]+)/.exec(this.form.server)
-      const host = matches[1]
-      const port = matches[2]
+      try {
+        let { hostname: host, port, protocol } = new URL(this.form.server)
 
-      const response = await this.$store.dispatch('peer/validatePeer', {
-        host,
-        port,
-        ignoreNetwork: true
-      })
-      let success = false
-      if (response === false) {
-        this.$error(this.$t('MODAL_NETWORK.SEED_VALIDATE_FAILED'))
-      } else if (typeof response === 'string') {
-        this.$error(`${this.$t('MODAL_NETWORK.SEED_VALIDATE_FAILED')}: ${response}`)
-      } else {
-        success = true
+        if (!port) {
+          port = protocol === 'https:' ? 443 : 80
+        }
+
+        const response = await this.$store.dispatch('peer/validatePeer', {
+          host,
+          port,
+          ignoreNetwork: true
+        })
+        let success = false
+        if (response === false) {
+          this.$error(this.$t('MODAL_NETWORK.SEED_VALIDATE_FAILED'))
+        } else if (typeof response === 'string') {
+          this.$error(`${this.$t('MODAL_NETWORK.SEED_VALIDATE_FAILED')}: ${response}`)
+        } else {
+          success = true
+        }
+        this.showLoadingModal = false
+
+        return success
+      } catch (error) {
+        //
       }
-      this.showLoadingModal = false
 
-      return success
+      return false
     },
 
     async updateNetwork () {
@@ -447,13 +510,32 @@ export default {
         enabled: this.form.ticker !== '',
         ticker: this.form.ticker !== '' ? this.form.ticker : null
       }
+      customNetwork.version = parseInt(customNetwork.version) // Important: needs to be a Number
       customNetwork.subunit = this.form.token.toLowerCase() + 'toshi'
       customNetwork.fractionDigits = 8
       customNetwork.wif = parseInt(this.form.wif)
       customNetwork.knownWallets = {}
 
       if (this.showFull && this.hasFetched) {
+        let { hostname: ip, port, protocol } = new URL(this.form.server)
+
+        const isHttps = protocol === 'https:'
+
+        if (!port) {
+          port = isHttps ? 443 : 80
+        }
+
+        const peer = {
+          version: '0',
+          height: 0,
+          latency: 0,
+          port: parseInt(port),
+          ip,
+          isHttps
+        }
+
         await this.$store.dispatch('network/addCustomNetwork', customNetwork)
+        await this.$store.dispatch('peer/setToNetwork', { peers: [peer], networkId: customNetwork.id })
       } else {
         // Note: this is also used to update the 'default' networks, since the update checks if it exists as custom network
         await this.$store.dispatch('network/updateCustomNetwork', customNetwork)
@@ -475,14 +557,14 @@ export default {
         // Default values during the core API transition stage
         wif: '170',
         slip44: '1',
-        activeDelegates: '201'
+        activeDelegates: '51'
       }
 
       const fetchAndFill = async (callback = null) => {
         const network = await ClientService.fetchNetworkConfig(this.form.server)
 
         if (network) {
-          const tokenFound = await cryptoCompare.checkTradeable(network.token)
+          const tokenFound = await priceApi.verifyToken(network.token)
 
           for (const key of Object.keys(this.form)) {
             if (Object.prototype.hasOwnProperty.call(network, key)) {
@@ -492,6 +574,9 @@ export default {
             }
           }
           this.form.ticker = tokenFound ? network.token : ''
+          if (tokenFound && network.version) {
+            this.form.version = network.version.toString()
+          }
 
           this.showFull = true
           this.hasFetched = true
@@ -569,6 +654,10 @@ export default {
       symbol: {
         requiredIfFull
       },
+      version: {
+        requiredIfFull,
+        numeric
+      },
       explorer: {
         requiredIfFull,
         isValid (value) {
@@ -576,6 +665,14 @@ export default {
         },
         hasScheme (value) {
           return !this.showFull || /^https?:\/\//.test(value)
+        }
+      },
+      knownWalletsUrl: {
+        required () {
+          return true
+        },
+        isValid (value) {
+          return !value || url(value)
         }
       },
       epoch: {

@@ -1,7 +1,7 @@
 import nock from 'nock'
 import Vue from 'vue'
 import Vuex from 'vuex'
-import apiClient from '@/plugins/api-client'
+import apiClient, { client as ClientService } from '@/plugins/api-client'
 import store from '@/store'
 import delegates, { delegate1, delegate2 } from '../../__fixtures__/store/delegate'
 import { network1 } from '../../__fixtures__/store/network'
@@ -19,10 +19,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   nock.cleanAll()
-  nock('http://127.0.0.1')
-    .persist()
-    .post('/api/v2/wallets/search')
-    .reply(200, { data: [] })
+  ClientService.host = 'http://127.0.0.1'
 })
 
 describe('delegate store module', () => {
@@ -54,40 +51,44 @@ describe('delegate store module', () => {
     expect(store.getters['delegate/byPublicKey']()).toBe(false)
   })
 
-  it('should fetch delegates from v1 api should store the same as v2 api', async () => {
-    const v2DelegateData = delegates.map(delegate => {
-      return {
-        username: delegate.username,
-        address: delegate.address,
-        publicKey: delegate.publicKey,
-        votes: delegate.votes,
-        rank: delegate.rank,
-        blocks: {
-          produced: delegate.blocks.produced
-        },
-        production: {
-          approval: delegate.production.approval
-        },
-        forged: {
-          fees: delegate.forged.fees,
-          rewards: delegate.forged.rewards,
-          total: delegate.forged.total
-        }
-      }
-    })
+  describe('dispatch', () => {
+    describe('load', () => {
+      it('should fetch delegates from api', async () => {
+        nock('http://127.0.0.1')
+          .get('/api/delegates')
+          .query({ page: 1, limit: 100, orderBy: 'rank:asc' })
+          .reply(200, {
+            data: delegates,
+            meta: {
+              totalCount: 2
+            }
+          })
 
-    nock('http://127.0.0.1')
-      .get('/api/v2/delegates')
-      .query({ page: 1, limit: 100, orderBy: 'rank:asc' })
-      .reply(200, {
-        data: v2DelegateData,
-        meta: {
-          totalCount: 2
-        }
+        await store.dispatch('delegate/load')
+
+        expect(Object.values(store.getters['delegate/all'][profile1.networkId])).toEqual(delegates)
       })
 
-    await store.dispatch('delegate/load')
+      it('should load all pages', async () => {
+        const pageCount = 10
 
-    expect(Object.values(store.getters['delegate/all'][profile1.networkId])).toEqual(delegates)
+        for (let page = 1; page <= pageCount; page++) {
+          nock('http://127.0.0.1')
+            .get('/api/delegates')
+            .query({ page, limit: 100, orderBy: 'rank:asc' })
+            .reply(200, {
+              data: delegates.map(delegate => ({ ...delegate, address: `${delegate.address}-${page}` })),
+              meta: {
+                pageCount: 10,
+                totalCount: (delegates.length * 10)
+              }
+            })
+        }
+
+        await store.dispatch('delegate/load')
+
+        expect(Object.values(store.getters['delegate/all'][profile1.networkId]).length).toEqual(delegates.length * 10)
+      })
+    })
   })
 })

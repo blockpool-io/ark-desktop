@@ -1,6 +1,15 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
+const originalPush = Router.prototype.push
+Router.prototype.push = function push (location) {
+  return originalPush.call(this, location).catch(error => {
+    if (error.name !== 'NavigationDuplicated') {
+      throw error
+    }
+  })
+}
+
 Vue.use(Router)
 
 // NOTE: when adding a route here, check the `KeepAliveRoutes` computed property
@@ -38,9 +47,9 @@ const router = new Router({
       component: require('@/pages/NetworkOverview').default
     },
     {
-      path: '/plugins',
-      name: 'plugins',
-      component: require('@/pages/Plugins').default
+      path: '/plugin-manager',
+      name: 'plugin-manager',
+      component: require('@/pages/PluginManager').default
     },
     {
       path: '/profiles/new',

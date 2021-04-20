@@ -1,18 +1,11 @@
-import bip39 from 'bip39'
-import { Crypto, Identities } from '@blockpool-io/crypto'
+import * as bip39 from 'bip39'
+import { Crypto, Identities } from '@arkecosystem/crypto'
 import { version as mainnetVersion } from '@config/networks/mainnet'
 import store from '@/store'
-import got from 'got'
+import { CryptoUtils } from './crypto/utils'
+import { reqwest } from '@/utils/http'
 
 export default class WalletService {
-  /*
-   * Normalizes the passphrase by decomposing any characters (if applicable)
-   * This is mainly used for the korean language where characters are combined while the passphrase was based on the decomposed consonants
-  */
-  static normalizePassphrase (passphrase) {
-    return passphrase.normalize('NFD')
-  }
-
   /*
    * Generate a wallet.
    * It does not check if the wallet is new (no transactions on the blockchain)
@@ -21,7 +14,7 @@ export default class WalletService {
    */
   static generate (pubKeyHash, language) {
     const passphrase = bip39.generateMnemonic(null, null, bip39.wordlists[language])
-    const publicKey = Identities.Keys.fromPassphrase(this.normalizePassphrase(passphrase)).publicKey
+    const publicKey = Identities.Keys.fromPassphrase(CryptoUtils.normalizePassphrase(passphrase)).publicKey
     return {
       address: Identities.Address.fromPublicKey(publicKey, pubKeyHash),
       passphrase
@@ -42,11 +35,37 @@ export default class WalletService {
    * @return {String}
    */
   static getAddress (passphrase, pubKeyHash) {
-    return Identities.Address.fromPassphrase(this.normalizePassphrase(passphrase), pubKeyHash)
+    return Identities.Address.fromPassphrase(CryptoUtils.normalizePassphrase(passphrase), pubKeyHash)
   }
 
   static getAddressFromPublicKey (publicKey, pubKeyHash) {
     return Identities.Address.fromPublicKey(publicKey, pubKeyHash)
+  }
+
+  /**
+   * Returns the address generated from a multi-signature registration.
+   * @param {Object} multiSignatureAsset
+   * @return {String}
+   */
+  static getAddressFromMultiSignatureAsset (multiSignatureAsset) {
+    return Identities.Address.fromMultiSignatureAsset(multiSignatureAsset)
+  }
+
+  /**
+   * Generates the public key belonging to a wallet
+   * @param {Object} wallet
+   * @return {String|null}
+   */
+  static getPublicKeyFromWallet (wallet) {
+    if (!wallet) {
+      return null
+    }
+
+    if (wallet.multiSignature) {
+      return this.getPublicKeyFromMultiSignatureAsset(wallet.multiSignature)
+    }
+
+    return wallet.publicKey || null
   }
 
   /**
@@ -55,7 +74,25 @@ export default class WalletService {
    * @return {String}
    */
   static getPublicKeyFromPassphrase (passphrase) {
-    return Identities.Keys.fromPassphrase(this.normalizePassphrase(passphrase)).publicKey
+    return Identities.PublicKey.fromPassphrase(CryptoUtils.normalizePassphrase(passphrase))
+  }
+
+  /**
+   * Generates the public key belonging to the given wif
+   * @param {String} wif
+   * @return {String}
+   */
+  static getPublicKeyFromWIF (wif) {
+    return Identities.PublicKey.fromWIF(wif)
+  }
+
+  /**
+   * Returns the public key generated from a multi-signature registration.
+   * @param {Object} multiSignatureAsset
+   * @return {String}
+   */
+  static getPublicKeyFromMultiSignatureAsset (multiSignatureAsset) {
+    return Identities.PublicKey.fromMultiSignatureAsset(multiSignatureAsset)
   }
 
   /**
@@ -69,8 +106,24 @@ export default class WalletService {
     }
 
     const neoUrl = 'https://neoscan.io/api/main_net/v1/get_last_transactions_by_address/'
-    const response = await got(neoUrl + address)
-    return response.status === 200 && response.body && response.body.length > 0
+    const response = await reqwest(neoUrl + address, {
+      json: true
+    })
+
+    return response.statusCode === 200 && response.body && response.body.length > 0
+  }
+
+  /**
+   * Check if a wallet can resign as a delegate
+   * @param {Object} wallet
+   * @returns {Boolean}
+   */
+  static canResignDelegate (wallet) {
+    if (!wallet.isDelegate) {
+      return false
+    }
+
+    return !wallet.isResigned
   }
 
   /**
@@ -80,7 +133,7 @@ export default class WalletService {
    * @return {String}
    */
   static signMessage (message, passphrase) {
-    return Crypto.Message.sign(message, this.normalizePassphrase(passphrase))
+    return Crypto.Message.sign(message, CryptoUtils.normalizePassphrase(passphrase))
   }
 
   /**
@@ -115,14 +168,15 @@ export default class WalletService {
   }
 
   /**
+   * TODO: Is this necessary? A passphrase is always valid as long as it's a string.
+   *
    * Check that a passphrase is valid.
    * @param {String} passhrase
-   * @param {Number} pubKeyHash - also known as address or network version
    * @return {Boolean}
    */
-  static validatePassphrase (passphrase, pubKeyHash) {
-    const publicKey = Identities.Keys.fromPassphrase(this.normalizePassphrase(passphrase)).publicKey
-    return Identities.PublicKey.validate(publicKey, pubKeyHash)
+  static validatePassphrase (passphrase) {
+    const publicKey = Identities.Keys.fromPassphrase(CryptoUtils.normalizePassphrase(passphrase)).publicKey
+    return Identities.PublicKey.verify(publicKey)
   }
 
   /**
@@ -132,7 +186,7 @@ export default class WalletService {
    * @return {Boolean}
    */
   static isBip39Passphrase (passphrase, language) {
-    return bip39.validateMnemonic(this.normalizePassphrase(passphrase), bip39.wordlists[language])
+    return bip39.validateMnemonic(CryptoUtils.normalizePassphrase(passphrase), bip39.wordlists[language])
   }
 
   /**
@@ -169,6 +223,6 @@ export default class WalletService {
    * @return {Boolean}
    */
   static verifyPassphrase (address, passphrase, pubKeyHash) {
-    return address === WalletService.getAddress(this.normalizePassphrase(passphrase), pubKeyHash)
+    return address === WalletService.getAddress(CryptoUtils.normalizePassphrase(passphrase), pubKeyHash)
   }
 }

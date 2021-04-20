@@ -9,6 +9,8 @@ const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
 const webpackHotMiddleware = require('webpack-hot-middleware')
 
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
 const mainConfig = require('./webpack.main.config')
 const rendererConfig = require('./webpack.renderer.config')
 
@@ -41,6 +43,7 @@ function logStats (proc, data) {
 function startRenderer () {
   return new Promise((resolve, reject) => {
     rendererConfig.entry.renderer = [path.join(__dirname, 'dev-client')].concat(rendererConfig.entry.renderer)
+    rendererConfig.entry.splashscreen = [path.join(__dirname, 'dev-client')].concat(rendererConfig.entry.splashscreen)
     rendererConfig.mode = 'development'
     const compiler = webpack(rendererConfig)
     hotMiddleware = webpackHotMiddleware(compiler, {
@@ -49,7 +52,7 @@ function startRenderer () {
     })
 
     compiler.hooks.compilation.tap('compilation', compilation => {
-      compilation.hooks.htmlWebpackPluginAfterEmit.tapAsync('html-webpack-plugin-after-emit', (data, cb) => {
+      HtmlWebpackPlugin.getHooks(compilation).afterEmit.tapAsync('html-webpack-plugin-after-emit', (data, cb) => {
         hotMiddleware.publish({ action: 'reload' })
         cb()
       })

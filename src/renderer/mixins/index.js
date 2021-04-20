@@ -1,4 +1,4 @@
-import merge from 'lodash/merge'
+import { merge } from 'lodash'
 
 const mixins = [
   require('./assets').default,
@@ -10,6 +10,7 @@ const mixins = [
   require('./qr').default,
   require('./session').default,
   require('./strings').default,
+  require('./transaction-types').default,
   require('./wallet').default
 ]
 

@@ -23,10 +23,6 @@ export default {
   mutations: {
     SAVE_ANNOUNCEMENTS (state, items) {
       const announcementsFromFeedItems = items.map(item => Announcement.deserialize(item))
-        .map(i => ({
-          ...i,
-          guid: i.guid || btoa(i.url).replace('=', '')
-        }))
 
       state.announcements = unionBy(state.announcements, announcementsFromFeedItems, 'guid')
     },
@@ -35,14 +31,37 @@ export default {
       const readAnnouncementIndex = state.announcements.findIndex(announcement => announcement.guid === readAnnouncement.guid)
       Vue.set(state.announcements, readAnnouncementIndex, {
         ...readAnnouncement,
+        summary: null,
         isRead: true
       })
+    },
+
+    MARK_ANNOUNCEMENT_AS_READ_BULK (state, announcements) {
+      const announcementsToUpdate = []
+      for (const announcement of state.announcements) {
+        let isRead = announcement.isRead
+        if (announcements.find(readAnnouncement => announcement.guid === readAnnouncement.guid)) {
+          isRead = true
+        }
+
+        announcementsToUpdate.push({
+          ...announcement,
+          summary: isRead ? null : announcement.summary,
+          isRead
+        })
+      }
+
+      Vue.set(state, 'announcements', announcementsToUpdate)
     }
   },
 
   actions: {
     markAsRead ({ commit }, announcement) {
       commit('MARK_ANNOUNCEMENT_AS_READ', announcement)
+    },
+
+    markAsReadBulk ({ commit }, announcements) {
+      commit('MARK_ANNOUNCEMENT_AS_READ_BULK', announcements)
     },
 
     async fetch ({ commit }) {

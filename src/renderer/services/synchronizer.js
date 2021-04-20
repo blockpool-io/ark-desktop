@@ -1,4 +1,5 @@
-import { flatten, includes, isFunction, pullAll } from 'lodash'
+import { pullAll } from 'lodash'
+import { flatten } from '@/utils'
 import { announcements, fees, ledger, market, peer, wallets } from './synchronizer/'
 /**
  * This class adds the possibility to define actions (not to confuse with Vuex actions)
@@ -14,8 +15,8 @@ import { announcements, fees, ledger, market, peer, wallets } from './synchroniz
  */
 export default class Synchronizer {
   get intervals () {
-    // BPL block production time
-    const block = 15000
+    // ARK block production time
+    const block = 8000
 
     const intervals = {
       longest: block * 300,
@@ -39,18 +40,6 @@ export default class Synchronizer {
         default: { interval: longest, delay: loop * 6 },
         focus: { interval: medium }
       },
-      market: {
-        default: { interval: medium },
-        focus: { interval: shorter }
-      },
-      wallets: {
-        default: { interval: shorter },
-        focus: { interval: shortest }
-      },
-      ledgerWallets: {
-        default: { interval: shorter },
-        focus: { interval: shortest }
-      },
       delegates: {
         default: { interval: longer, delay: loop * 3 },
         focus: { interval: longer }
@@ -59,9 +48,21 @@ export default class Synchronizer {
         default: { interval: null },
         focus: { interval: shorter }
       },
+      ledgerWallets: {
+        default: { interval: shorter },
+        focus: { interval: shortest }
+      },
+      market: {
+        default: { interval: medium },
+        focus: { interval: shorter }
+      },
       peer: {
         default: { interval: longer },
         focus: { interval: shorter }
+      },
+      wallets: {
+        default: { interval: shorter },
+        focus: { interval: shortest }
       }
     }
     config.contacts = config.wallets
@@ -95,7 +96,7 @@ export default class Synchronizer {
    * @param {Function} actionFn
    */
   define (actionId, config, actionFn) {
-    if (!isFunction(actionFn)) {
+    if (typeof actionFn !== 'function') {
       throw new Error('[$synchronizer] action is not a function')
     }
     ;['default', 'focus'].forEach(mode => {
@@ -194,14 +195,14 @@ export default class Synchronizer {
      */
     const run = (options = {}) => {
       Object.keys(this.actions).forEach(actionId => {
-        if (!includes(this.paused, actionId)) {
+        if (!this.paused.includes(actionId)) {
           const action = this.actions[actionId]
 
           if (!action.isCalling) {
             if (options.immediate) {
               this.call(actionId)
             } else {
-              const mode = includes(this.focused, actionId) ? 'focus' : 'default'
+              const mode = this.focused.includes(actionId) ? 'focus' : 'default'
               const { interval } = action[mode]
 
               // A `null` interval means no interval, so the action does not run

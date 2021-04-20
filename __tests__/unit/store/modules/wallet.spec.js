@@ -1,21 +1,44 @@
 import store from '@/store'
 
 describe('WalletModule', () => {
+  const sessionNetwork = { id: 'exampleNetworkId' }
+
+  const sessionProfile = {
+    id: 'exampleId',
+    networkId: 'exampleNetworkId'
+  }
+
+  const otherProfile = {
+    id: 'otherId',
+    networkId: 'otherNetworkId'
+  }
+
   const models = [
-    { id: 1, address: 'A1', profileId: 'exampleId', name: 'name1' },
-    { id: 2, address: 'A2', profileId: 'otherId', name: 'name2' },
-    { id: 3, address: 'A3', profileId: 'otherId', name: 'name3' },
-    { id: 4, address: 'A3', profileId: 'exampleId', name: 'name4' },
-    { id: 5, address: 'A4', profileId: 'exampleId', name: 'name5', isContact: true },
-    { id: 6, address: 'A5', profileId: 'exampleId', name: 'name6', isContact: true }
+    { id: 1, address: 'A1', publicKey: 'PK1', balance: '1', profileId: sessionProfile.id, name: 'name1', vote: null },
+    { id: 2, address: 'A2', publicKey: 'PK2', balance: '2', profileId: otherProfile.id, name: 'name2', vote: null },
+    { id: 3, address: 'A3', publicKey: 'PK3', balance: '3', profileId: otherProfile.id, name: 'name3', vote: null },
+    { id: 4, address: 'A3', publicKey: 'PK4', balance: '4', profileId: sessionProfile.id, name: 'name4', vote: null },
+    { id: 5, address: 'A4', publicKey: 'PK5', balance: '5', profileId: sessionProfile.id, name: 'name5', vote: null, isContact: true },
+    { id: 6, address: 'A5', publicKey: 'PK6', balance: '6', profileId: sessionProfile.id, name: 'name6', vote: null, isContact: true }
   ]
+
+  const ledgerWallets = {
+    L1: { address: 'L1', publicKey: 'PKL1', balance: '1', profileId: sessionProfile.id, name: null, vote: null, isLedger: true },
+    L2: { address: 'L2', publicKey: 'PKL2', balance: '2', profileId: sessionProfile.id, name: null, vote: null, isLedger: true },
+    L3: { address: 'L3', publicKey: 'PKL3', balance: '3', profileId: otherProfile.id, name: null, vote: null, isLedger: true }
+  }
 
   const messages = [
     { message: 'hello 1', timestamp: (new Date()).getTime() },
     { message: 'hello 2', timestamp: (new Date()).getTime() + 10 }
   ]
 
-  store.commit('session/SET_PROFILE_ID', 'exampleId')
+  store.commit('network/CREATE', sessionNetwork)
+  store.commit('profile/CREATE', sessionProfile)
+  store.commit('profile/CREATE', otherProfile)
+
+  store.commit('session/SET_PROFILE_ID', sessionProfile.id)
+  store.commit('ledger/SET_WALLETS', ledgerWallets)
 
   beforeEach(() => {
     models.forEach(model => store.commit('wallet/STORE', model))
@@ -87,7 +110,7 @@ describe('WalletModule', () => {
   })
 
   describe('getters contactsByProfileId', () => {
-    describe('when the profile does not have any wallet', () => {
+    describe('when the profile does not have any wallets', () => {
       it('should return an empty `Array`', () => {
         expect(store.getters['wallet/contactsByProfileId']('unknownId')).toBeEmpty()
       })
@@ -99,6 +122,37 @@ describe('WalletModule', () => {
         const walletsOfExampleId = [models[0], models[3]]
         expect(store.getters['wallet/contactsByProfileId']('exampleId')).toIncludeSameMembers(contactWalletsOfExampleId)
         expect(store.getters['wallet/contactsByProfileId']('exampleId')).not.toIncludeSameMembers(walletsOfExampleId)
+      })
+    })
+  })
+
+  describe('getters publicByProfileId', () => {
+    it.each(['address', 'balance', 'name', 'publicKey', 'vote'])('should include wallet %s property', property => {
+      const publicByProfileId = store.getters['wallet/publicByProfileId']('exampleId')
+
+      for (const publicWallet of publicByProfileId) {
+        expect(publicWallet[property]).not.toBeUndefined()
+      }
+    })
+
+    describe('when the session network is the network of the requested profile', () => {
+      it('should include ledger wallets', () => {
+        const walletsOfExampleId = [
+          models[0],
+          models[3],
+          ledgerWallets.L1,
+          ledgerWallets.L2
+        ].map(wallet => wallet.address)
+
+        const publicByProfileId = store.getters['wallet/publicByProfileId']('exampleId')
+        expect(publicByProfileId.map(wallet => wallet.address)).toIncludeSameMembers(walletsOfExampleId)
+      })
+    })
+
+    describe('when the session network is not the network of the requested profile', () => {
+      it('should not include ledger wallets', () => {
+        const ledgerWalletsOfOtherId = [ledgerWallets.L3]
+        expect(store.getters['wallet/publicByProfileId']('otherId')).not.toIncludeSameMembers(ledgerWalletsOfOtherId)
       })
     })
   })

@@ -4,18 +4,21 @@ import { I18N } from '@config'
 
 Vue.use(VueI18n)
 
-const messages = {}
+const defaultLocale = I18N.defaultLocale
 
-const messagesContext = require.context('./locales', true, /\.js$/)
+const config = {
+  locale: defaultLocale,
+  fallbackLocale: defaultLocale,
+  dateTimeFormats: {},
+  numberFormats: {},
+  messages: {},
+  silentTranslationWarn: true
+}
 
-I18N.enabledLocales.forEach(locale => {
-  messages[locale] = messagesContext(`./${locale}.js`).default
-})
+const language = require(`./languages/${defaultLocale}`).default
 
-export default new VueI18n({
-  locale: I18N.defaultLocale,
-  fallbackLocale: I18N.defaultLocale,
-  dateTimeFormats: require('./date-time-formats').default,
-  numberFormats: require('./number-formats').default,
-  messages
-})
+for (const property of ['messages', 'dateTimeFormats', 'numberFormats']) {
+  config[property][language.locale] = language[property]
+}
+
+export default new VueI18n(config)

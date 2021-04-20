@@ -39,11 +39,12 @@
         </div>
         <div class="bg-theme-settings-sub inline-block mx-6 rounded text-white relative px-3 py-2 inline-block select-none cursor-pointer">
           <button
+            class="w-full text-left pr-12"
             @click.stop="toggleSelect('peers-menu')"
           >
             <div
               slot="controls"
-              class="pointer-events-none"
+              class="pointer-events-none w-full"
             >
               <MenuDropdown
                 ref="peers-menu"
@@ -51,7 +52,7 @@
                 :value="currentPeerId"
                 :placeholder="peer ? `${peer.isHttps ? 'https://' : 'http://'}${peer.ip}` : $t('PEER.NONE')"
                 :pin-above="true"
-                class="inline-block text-white fill-white width-inherit"
+                class="inline-block text-white fill-white w-full"
                 @select="setPeer"
               />
             </div>
@@ -132,8 +133,13 @@
           @toggle="toggleCustomPeerModal"
         >
           <template slot-scope="{ toggle, isOpen }">
-            <NetworkCustomPeerModal
+            <ModalPeer
               v-if="isOpen"
+              :title="$t('PEER.CUSTOM_TITLE')"
+              :allow-close="!showLoadingModal"
+              :current-peer="peer"
+              :close-trigger="toggle"
+              @connect="connectPeer"
               @close="toggle"
             />
           </template>
@@ -155,12 +161,18 @@
         </RouterLink>
       </div>
     </div>
+
+    <ModalLoader
+      :message="$t('MODAL_PEER.VALIDATING')"
+      :allow-close="true"
+      :visible="showLoadingModal"
+    />
   </div>
 </template>
 
 <script>
 import { MenuDropdown, MenuNavigationItem, MenuOptions } from '@/components/Menu'
-import { NetworkCustomPeerModal } from '@/components/Network'
+import { ModalLoader, ModalPeer } from '@/components/Modal'
 import { ButtonModal, ButtonReload } from '@/components/Button'
 import SvgIcon from '@/components/SvgIcon'
 
@@ -173,7 +185,8 @@ export default {
     MenuDropdown,
     MenuNavigationItem,
     MenuOptions,
-    NetworkCustomPeerModal,
+    ModalLoader,
+    ModalPeer,
     SvgIcon
   },
 
@@ -194,7 +207,8 @@ export default {
     return {
       isNetworkStatusVisible: false,
       isRefreshing: false,
-      showCustomPeerModal: false
+      showCustomPeerModal: false,
+      showLoadingModal: false
     }
   },
 
@@ -212,7 +226,7 @@ export default {
       }
 
       return bestPeers.reduce((map, peer, index) => {
-        map[index] = `http://${peer.ip}`
+        map[index] = `${peer.isHttps ? 'https' : 'http'}://${peer.ip}`
 
         return map
       }, {})
@@ -244,6 +258,33 @@ export default {
 
     closeShowNetworkStatus () {
       this.isNetworkStatusVisible = false
+    },
+
+    async connectPeer ({ peer, closeTrigger }) {
+      this.showLoadingModal = true
+
+      const response = await this.$store.dispatch('peer/validatePeer', {
+        host: peer.host,
+        port: peer.port
+      })
+
+      if (response === false) {
+        this.$error(this.$t('PEER.CONNECT_FAILED'))
+        this.showLoadingModal = false
+      } else if (typeof response === 'string') {
+        this.$error(`${this.$t('PEER.CONNECT_FAILED')}: ${response}`)
+        this.showLoadingModal = false
+      } else {
+        response.isCustom = true
+        await this.$store.dispatch('peer/setCurrentPeer', response)
+        await this.$store.dispatch('peer/updateCurrentPeerStatus')
+        this.$success(`${this.$t('PEER.CONNECTED')}: ${peer.host}:${peer.port}`)
+        if (closeTrigger) {
+          closeTrigger()
+        }
+      }
+
+      this.showLoadingModal = false
     },
 
     async refreshPeer () {

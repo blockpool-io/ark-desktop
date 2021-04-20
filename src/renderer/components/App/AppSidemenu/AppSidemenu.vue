@@ -3,21 +3,21 @@
     v-model="activeItem"
     :class="{
       'AppSidemenu--horizontal': isHorizontal,
-      'AppSidemenu--vertical': !isHorizontal
+      'AppSidemenu--vertical mr-3 lg:mx-6': !isHorizontal
     }"
-    class="AppSidemenu relative bg-transparent"
+    class="AppSidemenu"
   >
     <div
       class="AppSidemenu__container flexify w-full md:h-full justify-between"
     >
-      <!-- BPL logo -->
+      <!-- ARK logo -->
       <RouterLink
         :title="$t('APP_SIDEMENU.DASHBOARD')"
         :to="{ name: 'dashboard' }"
-        class="AppSidemenu__logo bg-white hover:opacity-85 flex justify-center items-center"
+        class="AppSidemenu__logo bg-red hover:opacity-85 flex justify-center items-center"
         @click.native="redirect('dashboard')"
       >
-        <img src="@/assets/images/bpl-logo.png">
+        <img src="@/assets/images/ark-logo.png">
       </RouterLink>
 
       <div class="AppSidemenu__container__scrollable flex-1 overflow-y-auto flexify justify-between bg-theme-feature">
@@ -53,14 +53,14 @@
             @click="redirect($event)"
           />
 
-          <!-- Plugins -->
+          <!-- Plugin Manager -->
           <MenuNavigationItem
-            id="plugins"
-            :title="$t('APP_SIDEMENU.PLUGINS')"
+            id="plugin-manager"
+            :title="$t('APP_SIDEMENU.PLUGIN_MANAGER')"
             :is-horizontal="isHorizontal"
             :can-activate="false"
             class="AppSidemenu__item"
-            icon="plugins"
+            icon="manage-plugins"
             @click="redirect($event)"
           />
 
@@ -72,7 +72,7 @@
             :is-horizontal="isHorizontal"
             :can-activate="false"
             class="AppSidemenu__item"
-            icon="more"
+            icon="my-plugins"
             @click="toggleShowPluginMenu"
           />
 
@@ -87,7 +87,7 @@
         <div class="flexify">
           <!-- Important notification / new releases -->
           <AppSidemenuImportantNotification
-            v-if="isImportantNotificationVisible && hasNewRelease"
+            v-if="isImportantNotificationVisible && hasAvailableRelease"
             :is-horizontal="isHorizontal"
             class="AppSidemenu__item"
             @close="hideImportantNotification"
@@ -139,9 +139,7 @@
 </template>
 
 <script>
-import semver from 'semver'
 import { mapGetters } from 'vuex'
-import releaseService from '@/services/release'
 import AppSidemenuPlugins from './AppSidemenuPlugins'
 import AppSidemenuSettings from './AppSidemenuSettings'
 import AppSidemenuNetworkStatus from './AppSidemenuNetworkStatus'
@@ -149,8 +147,7 @@ import AppSidemenuImportantNotification from './AppSidemenuImportantNotification
 import { MenuNavigation, MenuNavigationItem } from '@/components/Menu'
 import { ProfileAvatar } from '@/components/Profile'
 import SvgIcon from '@/components/SvgIcon'
-
-var { ipcRenderer } = require('electron')
+import { ipcRenderer } from 'electron'
 
 export default {
   name: 'AppSidemenu',
@@ -182,12 +179,9 @@ export default {
 
   computed: {
     ...mapGetters({
-      latestReleaseVersion: 'app/latestReleaseVersion',
+      hasAvailableRelease: 'updater/hasAvailableRelease',
       unreadAnnouncements: 'announcements/unread'
     }),
-    hasNewRelease () {
-      return semver.lt(releaseService.currentVersion, this.latestReleaseVersion || releaseService.currentVersion)
-    },
     showUnread () {
       return this.unreadAnnouncements.length > 0
     },
@@ -230,7 +224,11 @@ export default {
       this.isPluginMenuVisible = !this.isPluginMenuVisible
     },
 
-    closeShowPlugins () {
+    closeShowPlugins (setActive) {
+      if (setActive) {
+        this.setActive('plugin-pages')
+      }
+
       this.isPluginMenuVisible = false
     }
   }
@@ -238,6 +236,7 @@ export default {
 </script>
 
 <style lang="postcss" scoped>
+.AppSidemenu { @apply relative bg-transparent }
 .AppSidemenu__container__scrollable .flexify { @apply flex-none }
 .AppSidemenu__logo { transition: opacity 0.5s; }
 
@@ -245,11 +244,12 @@ export default {
   transition: opacity 0.5s;
 }
 
-.AppSidemenu--horizontal .AppSidemenu__item { @apply w-16 }
+.AppSidemenu--horizontal { @apply h-full }
+.AppSidemenu--horizontal .flexify { @apply flex flex-row }
+.AppSidemenu--horizontal .AppSidemenu__container { @apply bg-theme-feature }
+.AppSidemenu--horizontal .AppSidemenu__item { @apply w-16 h-full }
 .AppSidemenu--horizontal .AppSidemenu__logo { @apply p-4 }
 .AppSidemenu--horizontal .AppSidemenu__logo img { @apply h-12 }
-.AppSidemenu--horizontal .flexify { @apply flex flex-row }
-.AppSidemenu--horizontal { @apply h-18; }
 .AppSidemenu--horizontal .AppSidemenu__avatar__dots {
   @apply absolute p-2 rounded-full bg-theme-feature;
   right: 0.1rem;
@@ -258,12 +258,12 @@ export default {
   height: 1.5rem;
 }
 
+.AppSidemenu--vertical { @apply w-22 h-full rounded-lg }
+.AppSidemenu--vertical .flexify { @apply flex flex-col }
 .AppSidemenu--vertical .AppSidemenu__container__scrollable { @apply rounded-lg py-2 }
 .AppSidemenu--vertical .AppSidemenu__item { @apply h-16 }
 .AppSidemenu--vertical .AppSidemenu__logo { @apply rounded-lg mb-3 p-5 }
 .AppSidemenu--vertical .AppSidemenu__logo img { @apply w-18 }
-.AppSidemenu--vertical .flexify { @apply flex flex-col }
-.AppSidemenu--vertical { @apply w-22 mx-6 rounded-lg }
 .AppSidemenu--vertical .AppSidemenu__avatar__dots {
   @apply absolute p-2 rounded-full bg-theme-feature shadow;
   right: 1rem;

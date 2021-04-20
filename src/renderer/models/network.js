@@ -15,7 +15,7 @@ export default new BaseModel({
       type: ['string', 'number']
     },
     apiVersion: {
-      type: 'number'
+      type: ['string', 'number']
     },
     market: {
       type: 'object'
@@ -44,7 +44,7 @@ export default new BaseModel({
       type: 'object'
     },
     feeStatistics: {
-      type: 'array'
+      type: 'object'
     },
     constants: {
       type: 'object'
@@ -56,6 +56,9 @@ export default new BaseModel({
           type: 'integer'
         }
       }
+    },
+    knownWalletsUrl: {
+      type: ['string', 'null']
     },
     knownWallets: {
       type: 'object',

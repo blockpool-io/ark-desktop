@@ -1,4 +1,3 @@
-import { isBoolean } from 'lodash'
 import BaseModel from './base'
 
 export default new BaseModel({
@@ -91,7 +90,7 @@ export default new BaseModel({
     },
     showPluginConfirmation: {
       type: 'boolean',
-      format: data => isBoolean(data.showPluginConfirmation) ? data.showPluginConfirmation : true
+      format: data => typeof data.showPluginConfirmation === 'boolean' ? data.showPluginConfirmation : true
     },
     transactionTableRowCount: {
       type: 'integer',
@@ -100,6 +99,14 @@ export default new BaseModel({
     unconfirmedVotes: {
       type: 'array',
       format: data => data.unconfirmedVotes || []
+    },
+    pluginManagerLayout: {
+      type: 'string',
+      format: data => data.pluginManagerLayout || 'grid'
+    },
+    pluginMenuOpen: {
+      type: 'boolean',
+      format: data => data.pluginMenuOpen !== undefined ? data.pluginMenuOpen : true
     },
     walletLayout: {
       type: 'string',
@@ -123,11 +130,35 @@ export default new BaseModel({
     },
     pluginSortParams: {
       type: 'object',
-      format: data => data.pluginSortParams || { field: 'id', type: 'asc' }
+      format: data => data.pluginSortParams || { field: 'title', type: 'asc' }
     },
     lastFees: {
       type: 'object',
       format: data => data.lastFees || {}
+    },
+    multiSignaturePeer: {
+      type: ['object', 'null'],
+      format: data => data.multiSignaturePeer || null
+    },
+    filterBlacklistedPlugins: {
+      type: 'boolean',
+      format: data => data.filterBlacklistedPlugins !== undefined ? data.filterBlacklistedPlugins : true
+    },
+    pluginAdapter: {
+      type: 'string',
+      format: data => data.pluginAdapter || 'npm'
+    },
+    priceApi: {
+      type: 'string',
+      format: data => data.priceApi || 'coingecko'
+    },
+    isAdvancedModeEnabled: {
+      type: 'boolean',
+      format: data => data.isAdvancedModeEnabled || false
+    },
+    defaultChosenFee: {
+      type: 'string',
+      format: data => data.defaultChosenFee || 'AVERAGE'
     }
   },
   required: ['background', 'currency', 'language', 'name', 'networkId', 'theme']

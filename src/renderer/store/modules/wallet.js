@@ -1,12 +1,39 @@
-import { findIndex, unionBy } from 'lodash'
+import { unionBy, uniqBy } from 'lodash'
 import WalletModel from '@/models/wallet'
 import Vue from 'vue'
 
 const includes = (objects, find) => objects.map(a => a.id).includes(find.id)
 const includesMessage = (objects, find) => objects.map(a => a.timestamp).includes(find.timestamp)
+const sanitizeWallet = (wallet) => {
+  if (wallet.attributes) {
+    if (wallet.attributes.business && wallet.attributes.business.businessAsset) {
+      wallet.business = wallet.attributes.business.businessAsset
+      wallet.business.resigned = !!wallet.attributes.business.resigned
+    }
+
+    if (wallet.attributes.delegate) {
+      wallet.isDelegate = true
+      wallet.isResigned = wallet.attributes.delegate.resigned
+    }
+
+    if (wallet.attributes.secondPublicKey) {
+      wallet.secondPublicKey = wallet.attributes.secondPublicKey
+    }
+
+    if (wallet.attributes.vote) {
+      wallet.vote = wallet.attributes.vote
+    }
+
+    if (wallet.attributes.multiSignature) {
+      wallet.multiSignature = wallet.attributes.multiSignature
+    }
+  }
+
+  return wallet
+}
 
 /**
- * Internally the wallets are stored aggregated by `profileId``
+ * Internally the wallets are stored aggregated by `profileId`
  */
 export default {
   namespaced: true,
@@ -37,7 +64,7 @@ export default {
       return state.wallets[profileId].find(wallet => wallet.name === name)
     },
 
-    byProfileId: (state, _, __, rootGetters) => profileId => {
+    byProfileId: (state) => profileId => {
       if (!state.wallets[profileId]) {
         return []
       }
@@ -45,20 +72,32 @@ export default {
       return state.wallets[profileId].filter(wallet => !wallet.isContact)
     },
 
-    publicByProfileId: (state) => (profileId, getContacts = false) => {
-      if (!state.wallets[profileId]) {
+    publicByProfileId: (state, _, __, rootGetters) => (profileId, getContacts = false) => {
+      const profileWallets = state.wallets[profileId] || []
+      const ledgerWallets = rootGetters['ledger/byProfileId'](profileId)
+
+      const wallets = uniqBy([
+        ...ledgerWallets,
+        ...profileWallets
+      ], 'address')
+
+      if (!wallets.length) {
         return []
       }
 
-      return state.wallets[profileId].filter(wallet => wallet.isContact === getContacts).map(wallet => ({
+      return wallets.filter(wallet => {
+        return wallet.isContact === getContacts || wallet.isContact === undefined
+      }).map(wallet => ({
         address: wallet.address,
         balance: wallet.balance,
         name: wallet.name,
-        publicKey: wallet.publicKey
+        publicKey: wallet.publicKey,
+        vote: wallet.vote,
+        ...(wallet.isLedger && { isLedger: wallet.isLedger })
       }))
     },
 
-    contactsByProfileId: (state, _, __, rootGetters) => profileId => {
+    contactsByProfileId: (state) => profileId => {
       if (!state.wallets[profileId]) {
         return []
       }
@@ -123,11 +162,13 @@ export default {
       state.wallets[profileId] = unionBy([...wallets, ...state.wallets[profileId]], 'id')
     },
     DELETE (state, wallet) {
-      const index = findIndex(state.wallets[wallet.profileId], { id: wallet.id })
-      if (index === -1) {
-        throw new Error(`Cannot delete wallet '${wallet.id}' - it does not exist on the state`)
+      if (state.wallets[wallet.profileId]) {
+        const index = state.wallets[wallet.profileId].findIndex(profileWallet => profileWallet.id === wallet.id)
+        if (index === -1) {
+          throw new Error(`Cannot delete wallet '${wallet.id}' - it does not exist on the state`)
+        }
+        state.wallets[wallet.profileId].splice(index, 1)
       }
-      state.wallets[wallet.profileId].splice(index, 1)
     },
     SET_LEDGER_NAME (state, { address, name, profileId }) {
       if (!state.ledgerNames[profileId]) {
@@ -148,9 +189,11 @@ export default {
       }
     },
     DELETE_SIGNED_MESSAGE (state, message) {
-      const index = findIndex(state.signedMessages[message.address], { timestamp: message.timestamp })
-      if (index !== -1) {
-        state.signedMessages[message.address].splice(index, 1)
+      if (state.signedMessages[message.address]) {
+        const index = state.signedMessages[message.address].findIndex(signedMessage => signedMessage.timestamp === message.timestamp)
+        if (index !== -1) {
+          state.signedMessages[message.address].splice(index, 1)
+        }
       }
     }
   },
@@ -166,13 +209,13 @@ export default {
       commit('STORE', wallets)
     },
     update ({ commit }, wallet) {
-      const data = WalletModel.deserialize(wallet)
+      const data = WalletModel.deserialize(sanitizeWallet(wallet))
       commit('UPDATE', data)
 
       return data
     },
     updateBulk ({ commit }, wallets) {
-      const data = wallets.map(wallet => WalletModel.deserialize(wallet))
+      const data = wallets.map(wallet => WalletModel.deserialize(sanitizeWallet(wallet)))
       commit('UPDATE_BULK', data)
 
       return data

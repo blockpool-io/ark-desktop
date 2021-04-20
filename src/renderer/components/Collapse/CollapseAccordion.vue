@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { isEmpty } from 'lodash'
+import { isEmpty } from '@/utils'
 
 export default {
   name: 'CollapseAccordion',
@@ -43,7 +43,7 @@ export default {
       this.$nextTick(() => (this.inputId = val))
     },
 
-    inputId (val) {
+    inputId () {
       this.toggleCollapse()
     },
 

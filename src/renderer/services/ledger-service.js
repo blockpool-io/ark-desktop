@@ -1,5 +1,5 @@
 import LedgerTransport from '@ledgerhq/hw-transport-node-hid-singleton'
-import ArkLedger from '@arkecosystem/ledger-transport'
+import { ARKTransport } from '@arkecosystem/ledger-transport'
 import queue from 'async/queue'
 import logger from 'electron-log'
 
@@ -35,7 +35,7 @@ class LedgerService {
 
     this.listeningForLedger = true
     this.transport = await LedgerTransport.create()
-    this.ledger = new ArkLedger(this.transport)
+    this.ledger = new ARKTransport(this.transport)
     this.listeningForLedger = false
   }
 
@@ -84,7 +84,7 @@ class LedgerService {
 
       // Make a request to the ledger device to determine if it's accessible
       const isConnected = await this.__performAction(async () => {
-        return this.ledger.getAddress(`44'/1'/0'/0/0`)
+        return this.ledger.getPublicKey('44\'/1\'/0\'/0/0')
       })
 
       return !!isConnected
@@ -96,36 +96,76 @@ class LedgerService {
   }
 
   /**
-   * Get address and public key from ledger wallet.
-   * @param  {Number} [path] Path for wallet location.
-   * @return {(String|Boolean)}
-   */
-  async getWallet (path) {
-    return this.__performAction(async () => {
-      return this.ledger.getAddress(path)
-    })
-  }
-
-  /**
    * Get public key from ledger wallet.
-   * @param  {Number} [path] Path for wallet location.
-   * @return {(String|Boolean)}
+   * @param  {string} path Path for wallet location.
+   * @return {Promise<string>}
    */
   async getPublicKey (path) {
     return this.__performAction(async () => {
-      return this.ledger.getAddress(path)
+      return this.ledger.getPublicKey(path)
     })
   }
 
   /**
-   * Sign transaction for ledger wallet.
-   * @param  {Number} [path] Path for wallet location.
-   * @param  {String} transactionHex Hex of transaction.
-   * @return {(String|Boolean)}
+   * Sign transaction for ledger wallet using ecdsa signatures.
+   * @param  {string} path Path for wallet location.
+   * @param  {Buffer} transactionBytes bytes of transaction.
+   * @return {Promise<string>}
    */
-  async signTransaction (path, transactionHex) {
+  async signTransaction (path, transactionBytes) {
     return this.__performAction(async () => {
-      return this.ledger.signTransaction(path, transactionHex)
+      return this.ledger.signTransaction(path, transactionBytes)
+    })
+  }
+
+  /**
+   * Sign transaction for ledger wallet using schnorr signatures.
+   * @param  {string} path Path for wallet location.
+   * @param  {Buffer} transactionBytes bytes of transaction.
+   * @return {Promise<string>}
+   */
+  async signTransactionWithSchnorr (path, transactionBytes) {
+    return this.__performAction(async () => {
+      try {
+        return await this.ledger.signTransactionWithSchnorr(path, transactionBytes)
+      } catch {
+        console.warn('Schnorr Signatures Unsupported; Trying Ecdsa..')
+        return this.ledger.signTransaction(path, transactionBytes)
+      }
+    })
+  }
+
+  /**
+   * Sign message for ledger wallet using ecdsa signatures.
+   * @param  {string} path Path for wallet location.
+   * @param  {Buffer} messageBytes bytes to sign.
+   * @return {Promise<string>}
+   */
+  async signMessage (path, messageBytes) {
+    return this.__performAction(async () => {
+      return this.ledger.signMessage(path, messageBytes)
+    })
+  }
+
+  /**
+   * Sign message for ledger wallet using schnorr signatures.
+   * @param  {string} path Path for wallet location.
+   * @param  {Buffer} messageBytes bytes to sign.
+   * @return {Promise<string>}
+   */
+  async signMessageWithSchnorr (path, messageBytes) {
+    return this.__performAction(async () => {
+      return this.ledger.signMessageWithSchnorr(path, messageBytes)
+    })
+  }
+
+  /**
+   * Get version of ledger wallet.
+   * @return {Promise<string>}
+   */
+  async getVersion () {
+    return this.__performAction(async () => {
+      return this.ledger.getVersion()
     })
   }
 
@@ -135,7 +175,7 @@ class LedgerService {
    * @return {Promise}
    */
   __performAction (action) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       this.actionsQueue.push({
         action,
         resolve

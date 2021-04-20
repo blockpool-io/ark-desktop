@@ -1,7 +1,7 @@
 import nock from 'nock'
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { Identities } from '@blockpool-io/crypto'
+import { Identities } from '@arkecosystem/crypto'
 import apiClient, { client as ClientService } from '@/plugins/api-client'
 import LedgerModule from '@/store/modules/ledger'
 import ledgerService from '@/services/ledger-service'
@@ -13,9 +13,9 @@ Vue.use(apiClient)
 
 logger.error = jest.fn()
 
-ClientService.host = 'http://127.0.0.1'
-
 let ledgerNameByAddress = () => null
+const sessionNetwork = jest.fn()
+
 let ledgerCache = false
 const nethash = '2a44f340d76ffc3df204c5f38cd355b7496c9065a1ade2ef92071436bd72e867'
 const store = new Vuex.Store({
@@ -36,10 +36,7 @@ const store = new Vuex.Store({
           return 'profile id'
         },
         network () {
-          return {
-            id: 'abc',
-            nethash
-          }
+          return sessionNetwork()
         }
       }
     },
@@ -57,12 +54,7 @@ const store = new Vuex.Store({
 
 let spyConnect
 const disconnectLedger = async () => {
-  spyConnect = jest.spyOn(
-    ledgerService,
-    'connect'
-  ).mockImplementation(() => {
-    return false
-  })
+  spyConnect = jest.spyOn(ledgerService, 'connect').mockImplementation(() => false)
   await store.dispatch('ledger/disconnect')
 }
 
@@ -71,28 +63,97 @@ beforeEach(async () => {
   if (spyConnect) {
     spyConnect.mockRestore()
   }
+
   store.replaceState(JSON.parse(JSON.stringify(initialState)))
-  ClientService.capabilities = '2.0.0'
+
+  sessionNetwork.mockReturnValue({
+    id: 'abc',
+    nethash,
+    constants: {
+      aip11: false
+    }
+  })
+
+  store._vm.$error = jest.fn()
+
+  ClientService.host = 'http://127.0.0.1'
   ledgerNameByAddress = () => null
   nock.cleanAll()
 })
+
 describe('ledger store module', () => {
-  it('should init ledger service', () => {
-    store.dispatch('ledger/init', 1234)
+  it('should init ledger service', async () => {
+    await store.dispatch('ledger/init', 1234)
 
     expect(store.state.ledger.slip44).toBe(1234)
   })
 
-  it('should set slip44 value', () => {
-    store.dispatch('ledger/init', 4567)
+  it('should set slip44 value', async () => {
+    await store.dispatch('ledger/init', 4567)
 
     expect(store.state.ledger.slip44).toBe(4567)
+  })
+
+  describe('updateVersion', () => {
+    it('should not show error if disconnected', async () => {
+      sessionNetwork.mockReturnValue({
+        id: 'abc',
+        nethash,
+        constants: {
+          aip11: true
+        }
+      })
+
+      await store.dispatch('ledger/connect')
+      await store.dispatch('ledger/setSlip44', 1234)
+      await disconnectLedger()
+      store._vm.$error.mockReset()
+      await store.dispatch('ledger/updateVersion')
+
+      expect(store._vm.$error).not.toHaveBeenCalled()
+    })
+
+    it('should not show error if aip11 is false', async () => {
+      await store.dispatch('ledger/updateVersion')
+
+      expect(store._vm.$error).not.toHaveBeenCalled()
+    })
+
+    it('should show error if aip11 is true', async () => {
+      sessionNetwork.mockReturnValue({
+        id: 'abc',
+        nethash,
+        constants: {
+          aip11: true
+        }
+      })
+
+      await store.dispatch('ledger/connect')
+      await store.dispatch('ledger/setSlip44', 1234)
+      await store.dispatch('ledger/updateVersion')
+
+      expect(store._vm.$error).toHaveBeenCalledWith(
+        'Ledger update available! Please update the ARK app via Ledger Live to send transactions on this network',
+        10000
+      )
+    })
+  })
+
+  describe('getVersion', () => {
+    it('should return version', async () => {
+      expect(await store.dispatch('ledger/getVersion')).toEqual('1.0.0')
+    })
+
+    it('should fail when not connected', async () => {
+      await disconnectLedger()
+      await expect(store.dispatch('ledger/getVersion')).rejects.toThrow(/.*Ledger not connected$/)
+    })
   })
 
   describe('getWallet', () => {
     it('should return address and publicKey', async () => {
       expect(await store.dispatch('ledger/getWallet', 1)).toEqual({
-        address: 'BKpdGNSzdMEWP62hd9WXmdX1XQ5K6E6bCH',
+        address: 'DLWeBuwSBFYtUFj8kFB8CFswfvN2ht3yKn',
         publicKey: '0278a28d0eac9916ef46613d9dbac706acc218e64864d4b4c1fcb0c759b6205b2b'
       })
     })
@@ -108,6 +169,20 @@ describe('ledger store module', () => {
   })
 
   describe('getAddress', () => {
+    it('should call ledger service', async () => {
+      await store.dispatch('ledger/connect')
+      await store.dispatch('ledger/setSlip44', 1234)
+
+      const spy = jest.spyOn(ledgerService, 'getPublicKey').mockReturnValue('PUBLIC_KEY')
+
+      const response = await store.dispatch('ledger/getPublicKey', 1)
+
+      expect(response).toBe('PUBLIC_KEY')
+      expect(spy).toHaveBeenNthCalledWith(1, '44\'/1234\'/1\'/0/0')
+
+      spy.mockRestore()
+    })
+
     it('should fail with invalid accountIndex', async () => {
       await expect(store.dispatch('ledger/getAddress')).rejects.toThrow(/.*accountIndex must be a Number$/)
     })
@@ -119,6 +194,20 @@ describe('ledger store module', () => {
   })
 
   describe('getPublicKey', () => {
+    it('should call ledger service', async () => {
+      await store.dispatch('ledger/connect')
+      await store.dispatch('ledger/setSlip44', 1234)
+
+      const spy = jest.spyOn(ledgerService, 'getPublicKey').mockReturnValue('PUBLIC_KEY')
+
+      const response = await store.dispatch('ledger/getPublicKey', 1)
+
+      expect(response).toBe('PUBLIC_KEY')
+      expect(spy).toHaveBeenNthCalledWith(1, '44\'/1234\'/1\'/0/0')
+
+      spy.mockRestore()
+    })
+
     it('should fail with invalid accountIndex', async () => {
       await expect(store.dispatch('ledger/getPublicKey')).rejects.toThrow(/.*accountIndex must be a Number$/)
     })
@@ -130,6 +219,23 @@ describe('ledger store module', () => {
   })
 
   describe('signTransaction', () => {
+    it('should call ledger service', async () => {
+      await store.dispatch('ledger/connect')
+      await store.dispatch('ledger/setSlip44', 1234)
+
+      const spy = jest.spyOn(ledgerService, 'signTransaction').mockReturnValue('SIGNATURE')
+
+      const response = await store.dispatch('ledger/signTransaction', {
+        accountIndex: 1,
+        transactionBytes: Buffer.from([1, 2, 3, 4])
+      })
+
+      expect(response).toBe('SIGNATURE')
+      expect(spy).toHaveBeenNthCalledWith(1, '44\'/1234\'/1\'/0/0', Buffer.from([1, 2, 3, 4]))
+
+      spy.mockRestore()
+    })
+
     it('should fail with invalid accountIndex', async () => {
       await expect(store.dispatch('ledger/signTransaction')).rejects.toThrow(/.*accountIndex must be a Number$/)
     })
@@ -138,7 +244,100 @@ describe('ledger store module', () => {
       await disconnectLedger()
       await expect(store.dispatch('ledger/signTransaction', {
         accountIndex: 1,
-        transactionHex: 'abc'
+        transactionBytes: Buffer.from('abc', 'utf-8')
+      })).rejects.toThrow(/.*Ledger not connected$/)
+    })
+  })
+
+  describe('signTransactionWithSchnorr', () => {
+    it('should call ledger service', async () => {
+      await store.dispatch('ledger/connect')
+      await store.dispatch('ledger/setSlip44', 1234)
+
+      const spy = jest.spyOn(ledgerService, 'signTransactionWithSchnorr').mockReturnValue('SIGNATURE')
+
+      const response = await store.dispatch('ledger/signTransactionWithSchnorr', {
+        accountIndex: 1,
+        transactionBytes: 'abc'
+      })
+
+      expect(response).toBe('SIGNATURE')
+      expect(spy).toHaveBeenNthCalledWith(1, '44\'/1234\'/1\'/0/0', 'abc')
+
+      spy.mockRestore()
+    })
+
+    it('should fail with invalid accountIndex', async () => {
+      await expect(store.dispatch('ledger/signTransactionWithSchnorr')).rejects.toThrow(/.*accountIndex must be a Number$/)
+    })
+
+    it('should fail when not connected', async () => {
+      await disconnectLedger()
+      await expect(store.dispatch('ledger/signTransactionWithSchnorr', {
+        accountIndex: 1,
+        transactionBytes: 'abc'
+      })).rejects.toThrow(/.*Ledger not connected$/)
+    })
+  })
+
+  describe('signMessage', () => {
+    it('should call ledger service', async () => {
+      await store.dispatch('ledger/connect')
+      await store.dispatch('ledger/setSlip44', 1234)
+
+      const spy = jest.spyOn(ledgerService, 'signMessage').mockReturnValue('SIGNATURE')
+
+      const response = await store.dispatch('ledger/signMessage', {
+        accountIndex: 1,
+        messageBytes: Buffer.from('abc', 'utf-8')
+      })
+
+      expect(response).toBe('SIGNATURE')
+      expect(spy).toHaveBeenNthCalledWith(1, '44\'/1234\'/1\'/0/0', Buffer.from('abc', 'utf-8'))
+
+      spy.mockRestore()
+    })
+
+    it('should fail with invalid accountIndex', async () => {
+      await expect(store.dispatch('ledger/signMessage')).rejects.toThrow(/.*accountIndex must be a Number$/)
+    })
+
+    it('should fail when not connected', async () => {
+      await disconnectLedger()
+      await expect(store.dispatch('ledger/signMessage', {
+        accountIndex: 1,
+        messageBytes: Buffer.from('abc', 'utf-8')
+      })).rejects.toThrow(/.*Ledger not connected$/)
+    })
+  })
+
+  describe('signMessageWithSchnorr', () => {
+    it('should call ledger service', async () => {
+      await store.dispatch('ledger/connect')
+      await store.dispatch('ledger/setSlip44', 1234)
+
+      const spy = jest.spyOn(ledgerService, 'signMessageWithSchnorr').mockReturnValue('SIGNATURE')
+
+      const response = await store.dispatch('ledger/signMessageWithSchnorr', {
+        accountIndex: 1,
+        messageBytes: 'abc'
+      })
+
+      expect(response).toBe('SIGNATURE')
+      expect(spy).toHaveBeenNthCalledWith(1, '44\'/1234\'/1\'/0/0', 'abc')
+
+      spy.mockRestore()
+    })
+
+    it('should fail with invalid accountIndex', async () => {
+      await expect(store.dispatch('ledger/signMessageWithSchnorr')).rejects.toThrow(/.*accountIndex must be a Number$/)
+    })
+
+    it('should fail when not connected', async () => {
+      await disconnectLedger()
+      await expect(store.dispatch('ledger/signMessageWithSchnorr', {
+        accountIndex: 1,
+        messageBytes: 'abc'
       })).rejects.toThrow(/.*Ledger not connected$/)
     })
   })
@@ -157,11 +356,11 @@ describe('ledger store module', () => {
       }
       spyGetWallet = jest.spyOn(
         ledgerService,
-        'getWallet'
+        'getPublicKey'
       ).mockImplementation((path) => {
         const matches = path.match(/^44'+\/.+'\/([0-9]+)'\/0\/0/)
 
-        return testWallets[matches[1]]
+        return testWallets[matches[1]].publicKey
       })
       spyCryptoGetAddress = jest.spyOn(
         Identities.Address,
@@ -220,73 +419,24 @@ describe('ledger store module', () => {
       expect(store.getters['ledger/shouldStopLoading']('test3')).toEqual(true)
     })
 
-    it('should load 10 wallets', async () => {
-      nock('http://127.0.0.1')
-        .persist()
-        .get(/\/api\/v2\/wallets\/.+/)
-        .reply(404, {
-          statusCode: 404,
-          error: 'Not Found',
-          message: 'Wallet not found'
-        })
-
-      expect(store.getters['ledger/isConnected']).toBeTruthy()
-      expect(await store.dispatch('ledger/reloadWallets', {
-        clearFirst: false,
-        forceLoad: false,
-        quantity: 10
-      })).not.toEqual({})
-      expect(store.getters['ledger/wallets'].length).toEqual(10)
-    })
-
-    it('should load all wallets without multi-wallet search', async () => {
-      for (const wallet of ledgerWallets) {
-        if (wallet.address === 'address 10') {
-          continue
-        }
-
-        nock('http://127.0.0.1')
-          .persist()
-          .get(`/api/v2/wallets/${wallet.address.replace(/\s+/, '%20')}`)
-          .reply(200, {
-            data: wallet
-          })
-      }
-
-      nock('http://127.0.0.1')
-        .persist()
-        .get('/api/v2/wallets/address%2010')
-        .reply(404, {
-          statusCode: 404,
-          error: 'Not Found',
-          message: 'Wallet not found'
-        })
-
-      await store.dispatch('ledger/connect')
-      expect(await store.dispatch('ledger/reloadWallets')).toEqual(expectedWallets)
-    })
-
     it('should load all wallets with multi-wallet search', async () => {
-      ClientService.capabilities = '2.1.0'
-
       nock('http://127.0.0.1')
         .persist()
-        .post('/api/v2/wallets/search')
+        .post('/api/wallets/search')
         .reply(200, {
           data: ledgerWallets.slice(0, 9)
         })
 
-      await store.dispatch('ledger/connect')
+      await store.commit('ledger/SET_CONNECTED', true)
       expect(await store.dispatch('ledger/reloadWallets')).toEqual(expectedWallets)
     })
 
     it('should use ledger name', async () => {
-      ClientService.capabilities = '2.1.0'
       ledgerNameByAddress = (address) => address
 
       nock('http://127.0.0.1')
         .persist()
-        .post('/api/v2/wallets/search')
+        .post('/api/wallets/search')
         .reply(200, {
           data: ledgerWallets.slice(0, 9)
         })
@@ -295,7 +445,7 @@ describe('ledger store module', () => {
         expectedWallets[walletId].name = expectedWallets[walletId].address
       }
 
-      await store.dispatch('ledger/connect')
+      await store.commit('ledger/SET_CONNECTED', true)
       expect(await store.dispatch('ledger/reloadWallets')).toEqual(expectedWallets)
     })
 

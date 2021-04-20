@@ -1,24 +1,27 @@
-import { Connection } from '@blockpool-io/client'
-import { Identities, Transactions } from '@blockpool-io/crypto'
+import { Connection } from '@arkecosystem/client'
 import { castArray, chunk, orderBy } from 'lodash'
-import got from 'got'
-import moment from 'moment'
 import logger from 'electron-log'
-import semver from 'semver'
-import { TRANSACTION_TYPES } from '@config'
+import { TRANSACTION_GROUPS, TRANSACTION_TYPES } from '@config'
 import store from '@/store'
-import eventBus from '@/plugins/event-bus'
+import TransactionService from '@/services/transaction'
+import { TransactionBuilderService } from './crypto/transaction-builder.service'
+import { TransactionSigner } from './crypto/transaction-signer'
 import BigNumber from '@/plugins/bignumber'
+import { camelToUpperSnake } from '@/utils'
+import semver from 'semver'
 
 export default class ClientService {
-  /*
-   * Normalizes the passphrase by decomposing any characters (if applicable)
-   * This is mainly used for the korean language where characters are combined while the passphrase was based on the decomposed consonants
-  */
-  normalizePassphrase (passphrase) {
-    if (passphrase) {
-      return passphrase.normalize('NFD')
-    }
+  /**
+   * Generate a new connection instance.
+   *
+   * @param  {String} server         Host URL to connect to server
+   * @param  {Number} [timeout=5000] Connection timeout
+   * @return {Connection}
+   */
+  static newConnection (server, timeout) {
+    return new Connection(`${server}/api`).withOptions({
+      timeout: timeout || 5000
+    })
   }
 
   /**
@@ -27,21 +30,24 @@ export default class ClientService {
    * Create a new client to isolate the main client.
    *
    * @param {String} server
-   * @param {Number} apiVersion
    * @param {Number} timeout
    * @returns {Object}
    */
   static async fetchNetworkConfig (server, timeout) {
-    const client = (new Connection(`${server}/api/v2`)).withOptions({ timeout: timeout || 5000 })
-
-    const response = await client.api('node').configuration()
+    const response = await ClientService.newConnection(server, timeout)
+      .api('node')
+      .configuration()
     const data = response.body.data
 
     const currentNetwork = store.getters['session/network']
-    if (currentNetwork.nethash === data.nethash) {
+    if (currentNetwork && currentNetwork.nethash === data.nethash) {
       const newLength = data.constants.vendorFieldLength
 
-      if (newLength && (!currentNetwork.vendorField || newLength !== currentNetwork.vendorField.maxLength)) {
+      if (
+        newLength &&
+        (!currentNetwork.vendorField ||
+          newLength !== currentNetwork.vendorField.maxLength)
+      ) {
         currentNetwork.vendorField = {
           maxLength: newLength
         }
@@ -54,70 +60,91 @@ export default class ClientService {
   }
 
   /**
-   * TODO: Remove unnecessary endpoints once core 2.4 is released (maybe wait until 2.5 so other chains have updated)
-   * Only for V2
-   * Get the configuration of a peer
-   * @param {String} host - URL of the host (using `core-p2p` port)
-   * @param {Number} [timeout=3000]
-   * @return {(Object|null)}
+   * Fetch the network crypto data, e.g. milestones
+   *
+   * @param {String} server
+   * @param {Number} timeout
+   * @returns {Object}
    */
-  static async fetchPeerConfig (host, timeout = 3000) {
-    const walletApiHost = host // .replace(/:\d+/, ':4040')
-    const endpoints = [
-      `${walletApiHost}/config`,
-      `${host}/config`,
-      walletApiHost
-    ]
-
-    for (const endpoint of endpoints) {
-      try {
-        const { body } = await got(endpoint, {
-          json: true,
-          timeout
-        })
-
-        if (body) {
-          return body.data
-        }
-      } catch (error) {
-        // TODO only if a new feature to enable logging is added
-        // console.log(`Error on \`${host}\``)
-      }
-    }
-
-    return null
+  static async fetchNetworkCrypto (server, timeout) {
+    return (
+      await ClientService.newConnection(server, timeout)
+        .api('node')
+        .crypto()
+    ).body.data
   }
 
   static async fetchFeeStatistics (server, timeout) {
+    let data
+
     try {
-      const client = (new Connection(`${server}/api/v2`)).withOptions({ timeout: timeout || 5000 })
-      const { body } = await client.api('node').fees(7)
+      const response = await ClientService.newConnection(server, timeout)
+        .api('node')
+        .fees(7)
 
-      return body.data.map(fee => ({
-        type: Number(fee.type),
-        fees: {
-          minFee: Number(fee.min),
-          maxFee: Number(fee.max),
-          avgFee: Number(fee.avg)
-        }
-      }))
+      data = response.body.data
     } catch (error) {
-      const { feeStatistics } = await ClientService.fetchNetworkConfig(server, timeout)
-
-      return feeStatistics
+      return []
     }
+
+    /*
+      The peer can send 2 types of response: an Array and and Object.
+      In case it sends an Object, the fees should be parsed according to the
+      transaction groups and types from @config.
+    */
+
+    // Case it is an Object
+    if (!Array.isArray(data)) {
+      // Remove the groups that are not in the response
+      const groupsIds = Object.values(TRANSACTION_GROUPS).filter(groupId => !!data[groupId])
+
+      const parsedFees = groupsIds.reduce((accumulator, groupId) => {
+        const retrivedTypeNames = Object.keys(data[groupId])
+
+        // Parse the fees and add to accumulator
+        accumulator[groupId] = retrivedTypeNames.map(typeName => {
+          const fees = data[groupId][typeName]
+
+          /*
+            Notice that the types are in different format.
+            Response is in cammelCase. Eg: 'bussinesUpdate'
+            @config is in UPPER_SNAKE_CASE. Eg: 'BUSSINES_UPDATE'
+          */
+          const groupName = `GROUP_${groupId}`
+          const parsedTypeName = camelToUpperSnake(typeName)
+
+          const type = TRANSACTION_TYPES[groupName][parsedTypeName]
+
+          return {
+            type,
+            fees: {
+              minFee: Number(fees.min),
+              maxFee: Number(fees.max),
+              avgFee: Number(fees.avg)
+            }
+          }
+        })
+
+        return accumulator
+      }, {})
+
+      return parsedFees
+    }
+
+    // Case the response is an Array
+    return data.map(fee => ({
+      type: Number(fee.type),
+      fees: {
+        minFee: Number(fee.min),
+        maxFee: Number(fee.max),
+        avgFee: Number(fee.avg)
+      }
+    }))
   }
 
-  constructor (watchProfile = true) {
+  constructor () {
     this.__host = null
-    // The API version is imprecise, since new capabilities are being added continuously.
-    // So, this property uses the peer version to know which features are available
-    this.__capabilities = '2.0.0'
     this.client = new Connection('http://localhost')
-
-    if (watchProfile) {
-      this.__watchProfile()
-    }
   }
 
   get host () {
@@ -125,25 +152,8 @@ export default class ClientService {
   }
 
   set host (host) {
-    host = `${host}/api/v2`
-    this.__host = host
-    this.client = (new Connection(host)).withOptions({ timeout: 5000 })
-  }
-
-  get version () {
-    return this.__version
-  }
-
-  get capabilities () {
-    return this.__capabilities
-  }
-
-  set capabilities (version) {
-    this.__capabilities = semver.coerce(version)
-  }
-
-  isCapable (version) {
-    return semver.gte(this.capabilities, version)
+    this.__host = `${host}/api`
+    this.client = ClientService.newConnection(host)
   }
 
   /**
@@ -158,14 +168,14 @@ export default class ClientService {
    *
    * @param {Object} [query]
    * @param {Number} [query.page=1]
-   * @param {Number} [query.limit=100]
+   * @param {Number} [query.limit=51]
    * @param {String} [query.orderBy='rank:asc']
    * @return {Object[]}
    */
   async fetchDelegates (options = {}) {
     const network = store.getters['session/network']
     options.page || (options.page = 1)
-    options.limit || (options.limit = Math.floor(network.constants.activeDelegates, 100))
+    options.limit || (options.limit = network.constants.activeDelegates)
     options.orderBy || (options.orderBy = 'rank:asc')
 
     const { body } = await this.client.api('delegates').all({
@@ -176,7 +186,7 @@ export default class ClientService {
 
     return {
       delegates: body.data,
-      totalCount: body.meta.totalCount
+      meta: body.meta
     }
   }
 
@@ -186,20 +196,16 @@ export default class ClientService {
    * @return {Number}
    */
   async fetchDelegateVoters (delegate, { page, limit } = {}) {
-    const { body } = await this.client.api('delegates').voters(delegate.username, { page, limit })
+    const { body } = await this.client
+      .api('delegates')
+      .voters(delegate.username, { page, limit })
 
     return body.meta.totalCount
   }
 
-  async fetchDelegateForged (delegate) {
+  fetchDelegateForged (delegate) {
     if (delegate.forged) {
       return delegate.forged.total
-    }
-
-    const { body } = await this.client.api('delegates').forged(delegate.publicKey)
-
-    if (body.success) {
-      return body.forged
     }
 
     return '0'
@@ -210,7 +216,7 @@ export default class ClientService {
    * @return {Number[]}
    */
   async fetchStaticFees () {
-    const fees = Object.values((await this.client.api('transactions').fees()).body.data)
+    const fees = (await this.client.api('transactions').fees()).body.data
 
     return fees
   }
@@ -248,6 +254,23 @@ export default class ClientService {
   }
 
   /**
+   * Fetch bridgechains for a business.
+   * @param  {String} address
+   * @return {Object}
+   */
+  async fetchBusinessBridgechains (address, options = {}) {
+    options.page || (options.page = 1)
+    options.limit || (options.limit = 50)
+    options.orderBy || (options.orderBy = 'name:asc')
+
+    return (await this.client.api('businesses').bridgechains(address, {
+      page: options.page,
+      limit: options.limit,
+      orderBy: options.orderBy
+    })).body
+  }
+
+  /**
    * Request the transactions according to the current network version
    *
    * V1:
@@ -271,11 +294,19 @@ export default class ClientService {
     let totalCount = 0
     let transactions = []
 
-    const { body } = await this.client.api('wallets').transactions(address, {
+    const queryOptions = {
       orderBy: options.orderBy,
       limit: options.limit,
       page: options.page
-    })
+    }
+
+    if (options.transactionType) {
+      queryOptions.type = options.transactionType
+    }
+
+    const { body } = await this.client
+      .api('wallets')
+      .transactions(address, queryOptions)
 
     transactions = body.data.map(transaction => {
       transaction.timestamp = transaction.timestamp.unix * 1000 // to milliseconds
@@ -289,7 +320,7 @@ export default class ClientService {
     const result = transactions.map(transaction => {
       transaction.isSender = transaction.sender === address
       transaction.isRecipient = transaction.recipient === address
-      transaction.totalAmount = new BigNumber(transaction.amount).plus(transaction.fee)
+      transaction.totalAmount = TransactionService.getTotalAmount(transaction)
 
       return transaction
     })
@@ -310,63 +341,91 @@ export default class ClientService {
     options = options || {}
 
     const walletData = {}
-    if (this.isCapable('2.1.0')) {
-      let transactions = []
-      let hadFailure = false
+    let transactions = []
+    let hadFailure = false
 
-      for (const addressChunk of chunk(addresses, 20)) {
-        try {
-          const { body } = await this.client.api('transactions').search({
-            addresses: addressChunk
-          })
-          transactions.push(...body.data)
-        } catch (error) {
-          logger.error(error)
-          hadFailure = true
-        }
+    const search = (addressList) => {
+      if (this.satisfiesCoreVersion('>=3')) {
+        return this.client.api('transactions').all({
+          address: addressList.join(',')
+        })
       }
 
-      if (!hadFailure) {
-        transactions = orderBy(transactions, 'timestamp', 'desc').map(transaction => {
+      return this.client.api('transactions').search({
+        addresses: addressList
+      })
+    }
+
+    for (const addressChunk of chunk(addresses, 20)) {
+      try {
+        const { body } = await search(addressChunk)
+        transactions.push(...body.data)
+      } catch (error) {
+        logger.error(error)
+        hadFailure = true
+      }
+    }
+
+    if (!hadFailure) {
+      transactions = orderBy(transactions, 'timestamp', 'desc').map(
+        transaction => {
           transaction.timestamp = transaction.timestamp.unix * 1000 // to milliseconds
           transaction.isSender = addresses.includes(transaction.sender)
           transaction.isRecipient = addresses.includes(transaction.recipient)
 
           return transaction
-        })
+        }
+      )
 
-        for (const transaction of transactions) {
-          if (addresses.includes(transaction.sender)) {
-            if (!walletData[transaction.sender]) {
-              walletData[transaction.sender] = {}
-            }
-            walletData[transaction.sender][transaction.id] = transaction
+      for (const transaction of transactions) {
+        if (addresses.includes(transaction.sender)) {
+          if (!walletData[transaction.sender]) {
+            walletData[transaction.sender] = {}
           }
-
-          if (transaction.recipient && addresses.includes(transaction.recipient)) {
-            if (!walletData[transaction.recipient]) {
-              walletData[transaction.recipient] = {}
-            }
-            walletData[transaction.recipient][transaction.id] = transaction
-          }
+          walletData[transaction.sender][transaction.id] = transaction
         }
 
-        for (const address of Object.keys(walletData)) {
-          if (walletData[address]) {
-            walletData[address] = Object.values(walletData[address])
+        if (
+          transaction.recipient &&
+          addresses.includes(transaction.recipient)
+        ) {
+          if (!walletData[transaction.recipient]) {
+            walletData[transaction.recipient] = {}
           }
+          walletData[transaction.recipient][transaction.id] = transaction
         }
 
-        return walletData
+        if (transaction.asset && transaction.asset.payments) {
+          for (const payment of transaction.asset.payments) {
+            if (addresses.includes(payment.recipientId)) {
+              if (!walletData[payment.recipientId]) {
+                walletData[payment.recipientId] = {}
+              }
+              walletData[payment.recipientId][transaction.id] = transaction
+            }
+          }
+        }
       }
+
+      for (const address of Object.keys(walletData)) {
+        if (walletData[address]) {
+          walletData[address] = Object.values(walletData[address])
+        }
+      }
+
+      return walletData
     }
 
     for (const address of addresses) {
       try {
-        walletData[address] = (await this.fetchWalletTransactions(address, options)).transactions
+        walletData[address] = (
+          await this.fetchWalletTransactions(address, options)
+        ).transactions
       } catch (error) {
         logger.error(error)
-        const message = error.response ? error.response.body.message : error.message
+        const message = error.response
+          ? error.response.body.message
+          : error.message
         if (message !== 'Wallet not found') {
           throw error
         }
@@ -394,25 +453,21 @@ export default class ClientService {
   async fetchWallets (addresses) {
     const walletData = []
 
-    if (this.isCapable('2.1.0')) {
-      for (const addressChunk of chunk(addresses, 20)) {
-        const { body } = await this.client.api('wallets').search({
-          addresses: addressChunk
+    const search = (addressList) => {
+      if (this.satisfiesCoreVersion('>=3')) {
+        return this.client.api('wallets').all({
+          address: addressList.join(',')
         })
-        walletData.push(...body.data)
       }
-    } else {
-      for (const address of addresses) {
-        try {
-          walletData.push(await this.fetchWallet(address))
-        } catch (error) {
-          logger.error(error)
-          const message = error.response ? error.response.body.message : error.message
-          if (message !== 'Wallet not found') {
-            throw error
-          }
-        }
-      }
+
+      return this.client.api('wallets').search({
+        addresses: addressList
+      })
+    }
+
+    for (const addressChunk of chunk(addresses, 20)) {
+      const { body } = await search(addressChunk)
+      walletData.push(...body.data)
     }
 
     return walletData
@@ -431,14 +486,20 @@ export default class ClientService {
       walletData = await this.fetchWallet(address)
     } catch (error) {
       logger.error(error)
-      const message = error.response ? error.response.body.message : error.message
+      const message = error.response
+        ? error.response.body.message
+        : error.message
       if (message !== 'Wallet not found') {
         throw error
       }
     }
 
-    if (walletData) {
-      return walletData.vote || null
+    if (walletData && walletData.attributes && walletData.attributes.vote) {
+      return walletData.attributes.vote
+    }
+
+    if (walletData && walletData.vote) {
+      return walletData.vote
     }
 
     return null
@@ -459,190 +520,176 @@ export default class ClientService {
    * @return {Object}
    */
   __parseCurrentPeer () {
-    const matches = /(https?:\/\/)([a-zA-Z0-9.-_]+):([0-9]+)/.exec(this.host)
+    const matches = /(https?:\/\/)([a-zA-Z0-9.\-_]+)(:([0-9]*))?/.exec(
+      this.host
+    )
     const scheme = matches[1]
     const ip = matches[2]
+    const port = matches[4]
+
     const isHttps = scheme === 'https://'
-    let port = isHttps ? 443 : 80
-    if (matches[3]) {
-      port = matches[3]
-    }
 
     return {
       ip,
-      port,
+      port: port || (isHttps ? '443' : '80'),
       isHttps
     }
   }
 
-  /**
-   * Build a vote transaction
-   * @param {Object} data
-   * @param {Array} data.votes
-   * @param {Number} data.fee - dynamic fee, as arktoshi
-   * @param {String} data.passphrase
-   * @param {String} data.secondPassphrase
-   * @param {String} data.wif
-   * @param {Boolean} returnObject - to return the transaction of its internal struct
-   * @returns {Object}
-   */
-  async buildVote ({ votes, fee, passphrase, secondPassphrase, wif, networkWif }, isAdvancedFee = false, returnObject = false) {
-    const staticFee = store.getters['transaction/staticFee'](TRANSACTION_TYPES.VOTE)
-    if (!isAdvancedFee && fee.gt(staticFee)) {
-      throw new Error(`Vote fee should be smaller than ${staticFee}`)
-    }
-
-    const transaction = Transactions.BuilderFactory
-      .vote()
-      .votesAsset(votes)
-      .fee(fee)
-
-    passphrase = this.normalizePassphrase(passphrase)
-    secondPassphrase = this.normalizePassphrase(secondPassphrase)
-
-    return this.__signTransaction({
-      transaction,
-      passphrase,
-      secondPassphrase,
-      wif,
-      networkWif
-    }, returnObject)
-  }
-
-  /**
-   * Build a delegate registration transaction
-   * @param {Object} data
-   * @param {String} data.username
-   * @param {Number} data.fee - dynamic fee, as arktoshi
-   * @param {String} data.passphrase
-   * @param {String} data.secondPassphrase
-   * @param {String} data.wif
-   * @param {Boolean} returnObject - to return the transaction of its internal struct
-   * @returns {Object}
-   */
-  async buildDelegateRegistration ({ username, fee, passphrase, secondPassphrase, wif, networkWif }, isAdvancedFee = false, returnObject = false) {
-    const staticFee = store.getters['transaction/staticFee'](TRANSACTION_TYPES.DELEGATE_REGISTRATION)
-    if (!isAdvancedFee && fee.gt(staticFee)) {
-      throw new Error(`Delegate registration fee should be smaller than ${staticFee}`)
-    }
-
-    const transaction = Transactions.BuilderFactory
-      .delegateRegistration()
-      .usernameAsset(username)
-      .fee(fee)
-
-    passphrase = this.normalizePassphrase(passphrase)
-    secondPassphrase = this.normalizePassphrase(secondPassphrase)
-
-    return this.__signTransaction({
-      transaction,
-      passphrase,
-      secondPassphrase,
-      wif,
-      networkWif
-    }, returnObject)
-  }
-
-  /**
-   * Build a transfer transaction.
-   * @param {Object} data
-   * @param {Number} data.amount - amount to send, as arktoshi
-   * @param {Number} data.fee - dynamic fee, as arktoshi
-   * @param {String} data.recipientId
-   * @param {String} data.vendorField
-   * @param {String} data.passphrase
-   * @param {String} data.secondPassphrase
-   * @param {String} data.wif
-   * @param {Boolean} returnObject - to return the transaction of its internal struct
-   * @returns {Object}
-   */
-  async buildTransfer ({ amount, fee, recipientId, vendorField, passphrase, secondPassphrase, wif, networkWif }, isAdvancedFee = false, returnObject = false) {
-    const staticFee = store.getters['transaction/staticFee'](TRANSACTION_TYPES.TRANSFER)
-    if (!isAdvancedFee && fee.gt(staticFee)) {
-      throw new Error(`Transfer fee should be smaller than ${staticFee}`)
-    }
-
-    const transaction = Transactions.BuilderFactory
-      .transfer()
-      .amount(amount)
-      .fee(fee)
-      .recipientId(recipientId)
-
-    transaction.data.vendorField = vendorField
-
-    passphrase = this.normalizePassphrase(passphrase)
-    secondPassphrase = this.normalizePassphrase(secondPassphrase)
-
-    return this.__signTransaction({
-      transaction,
-      passphrase,
-      secondPassphrase,
-      wif,
-      networkWif
-    }, returnObject)
-  }
-
-  /**
-   * Build a second signature registration transaction.
-   * @param {Object} data
-   * @param {Number} data.fee - dynamic fee, as arktoshi
-   * @param {String} data.passphrase
-   * @param {String} data.secondPassphrase
-   * @param {String} data.wif
-   * @param {Boolean} returnObject - to return the transaction of its internal struct
-   * @returns {Object}
-   */
-  async buildSecondSignatureRegistration ({ fee, passphrase, secondPassphrase, wif, networkWif }, isAdvancedFee = false, returnObject = false) {
-    const staticFee = store.getters['transaction/staticFee'](TRANSACTION_TYPES.SECOND_SIGNATURE)
-    if (!isAdvancedFee && fee.gt(staticFee)) {
-      throw new Error(`Second signature fee should be smaller than ${staticFee}`)
-    }
-
-    const transaction = Transactions.BuilderFactory
-      .secondSignature()
-      .signatureAsset(secondPassphrase)
-      .fee(fee)
-
-    passphrase = this.normalizePassphrase(passphrase)
-
-    return this.__signTransaction({
-      transaction,
-      passphrase,
-      wif,
-      networkWif
-    }, returnObject)
-  }
-
-  /**
-   * Signs a transaction
-   * @param {Object} data
-   * @param {Object} data.transaction
-   * @param {String} data.passphrase
-   * @param {String} data.secondPassphrase
-   * @param {String} data.wif
-   * @param {Boolean} returnObject - to return the transaction of its internal struct
-   * @returns {Object}
-   */
-  __signTransaction ({ transaction, passphrase, secondPassphrase, wif, networkWif }, returnObject = false) {
+  satisfiesCoreVersion (expectedVersion) {
     const network = store.getters['session/network']
-    transaction = transaction.network(network.version)
 
-    // TODO replace with dayjs
-    const epochTime = moment(network.constants.epoch).utc().valueOf()
-    const now = moment().valueOf()
-    transaction.data.timestamp = Math.floor((now - epochTime) / 1000)
-
-    if (passphrase) {
-      transaction = transaction.sign(this.normalizePassphrase(passphrase))
-    } else if (wif) {
-      transaction = transaction.signWithWif(wif, networkWif)
+    if (!network) {
+      return false
     }
 
-    if (secondPassphrase) {
-      transaction = transaction.secondSign(this.normalizePassphrase(secondPassphrase))
+    return semver.satisfies(semver.coerce(network.apiVersion), expectedVersion)
+  }
+
+  async getNonceForAddress ({ address, networkId }) {
+    let network
+    if (networkId) {
+      network = store.getters['network/byId'](networkId)
+    }
+    if (!network) {
+      network = store.getters['session/network']
     }
 
-    return returnObject ? transaction : transaction.getStruct()
+    if (network.constants.aip11) {
+      try {
+        const response = await this.fetchWallet(address)
+        return BigNumber(
+          response.nonce || 0
+        )
+          .plus(1)
+          .toString()
+      } catch (error) {
+        return '1'
+      }
+    }
+
+    return undefined
+  }
+
+  // todo: move this out
+  async buildTransfer (data, isAdvancedFee = false, returnObject = false) {
+    return this.__buildTransaction('buildTransfer', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildSecondSignatureRegistration (
+    data,
+    isAdvancedFee = false,
+    returnObject = false
+  ) {
+    return this.__buildTransaction('buildSecondSignatureRegistration', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildDelegateRegistration (
+    data,
+    isAdvancedFee = false,
+    returnObject = false
+  ) {
+    return this.__buildTransaction('buildDelegateRegistration', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildVote (data, isAdvancedFee = false, returnObject = false) {
+    return this.__buildTransaction('buildVote', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildMultiSignature (data, isAdvancedFee = false, returnObject = false) {
+    return this.__buildTransaction('buildMultiSignature', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildIpfs (data, isAdvancedFee = false, returnObject = false) {
+    return this.__buildTransaction('buildIpfs', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildMultiPayment (data, isAdvancedFee = false, returnObject = false) {
+    return this.__buildTransaction('buildMultiPayment', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildDelegateResignation (
+    data,
+    isAdvancedFee = false,
+    returnObject = false
+  ) {
+    return this.__buildTransaction('buildDelegateResignation', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildBusinessRegistration (
+    data,
+    isAdvancedFee = false,
+    returnObject = false
+  ) {
+    return this.__buildTransaction('buildBusinessRegistration', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildBusinessUpdate (data, isAdvancedFee = false, returnObject = false) {
+    return this.__buildTransaction('buildBusinessUpdate', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildBusinessResignation (
+    data,
+    isAdvancedFee = false,
+    returnObject = false
+  ) {
+    return this.__buildTransaction('buildBusinessResignation', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildBridgechainRegistration (
+    data,
+    isAdvancedFee = false,
+    returnObject = false
+  ) {
+    return this.__buildTransaction('buildBridgechainRegistration', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildBridgechainUpdate (
+    data,
+    isAdvancedFee = false,
+    returnObject = false
+  ) {
+    return this.__buildTransaction('buildBridgechainUpdate', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async buildBridgechainResignation (
+    data,
+    isAdvancedFee = false,
+    returnObject = false
+  ) {
+    return this.__buildTransaction('buildBridgechainResignation', data, isAdvancedFee, returnObject)
+  }
+
+  // todo: move this out
+  async __buildTransaction (
+    builder,
+    data,
+    isAdvancedFee = false,
+    returnObject = false
+  ) {
+    return TransactionBuilderService[builder](
+      { ...data, ...{ nonce: await this.getNonceForAddress(data) } },
+      isAdvancedFee,
+      returnObject
+    )
+  }
+
+  // todo: move this out
+  async multiSign (transaction, data) {
+    return TransactionSigner.multiSign(transaction, data)
   }
 
   /**
@@ -653,6 +700,12 @@ export default class ClientService {
    * @returns {Object[]}
    */
   async broadcastTransaction (transactions, broadcast) {
+    if (Array.isArray(transactions) && !transactions.length) {
+      return []
+    } else if (typeof transactions === 'object' && !transactions.network) {
+      return []
+    }
+
     let currentPeer = store.getters['peer/current']()
     if (!currentPeer) {
       currentPeer = this.__parseCurrentPeer()
@@ -665,7 +718,10 @@ export default class ClientService {
       if (peers && peers.length) {
         for (let i = 0; i < peers.length; i++) {
           try {
-            const client = await store.dispatch('peer/clientServiceFromPeer', peers[i])
+            const client = await store.dispatch(
+              'peer/clientServiceFromPeer',
+              peers[i]
+            )
             const transaction = await client.client.api('transactions').create({
               transactions: castArray(transactions)
             })
@@ -681,59 +737,10 @@ export default class ClientService {
     }
 
     if (!broadcast || failedBroadcast) {
-      const transaction = await this
-        .client
-        .api('transactions')
-        .create({
-          transactions: castArray(transactions)
-        })
+      const transaction = await this.client.api('transactions').create({
+        transactions: castArray(transactions)
+      })
       return [transaction]
     }
-  }
-
-  // TODO this shouldn't be responsibility of the client
-  // TODO update client when peer changes
-  __watchProfile () {
-    store.watch(
-      (_, getters) => getters['session/profile'],
-      async (profile, oldProfile) => {
-        if (!profile) {
-          return
-        }
-
-        const network = store.getters['network/byId'](profile.networkId)
-        const currentPeer = store.getters['peer/current']()
-
-        if (currentPeer && currentPeer.ip) {
-          const scheme = currentPeer.isHttps ? 'https://' : 'http://'
-          this.host = `${scheme}${currentPeer.ip}:${currentPeer.port}`
-          this.capabilities = currentPeer.version
-
-        // TODO if we could use the server from network, then, it is a peer and this shouldn't be necessary
-        } else {
-          let { server, apiVersion } = network
-          this.host = server
-
-          // Infer which are the real capabilities of the peer
-          try {
-            const testAddress = Identities.Address.fromPassphrase('test', network.version)
-            const { address } = this.client.api('wallets').search({
-              addresses: [testAddress]
-            })
-
-            apiVersion = (address === testAddress) ? '2.1.0' : '2.0.0'
-          } catch (_) {
-            // The peer does not have capability to search for multiple wallets or transactions at once
-          }
-
-          this.capabilities = apiVersion
-        }
-
-        if (!oldProfile || profile.id !== oldProfile.id) {
-          eventBus.emit('client:changed')
-        }
-      },
-      { immediate: true }
-    )
   }
 }

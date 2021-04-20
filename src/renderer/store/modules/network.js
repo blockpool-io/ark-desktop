@@ -1,10 +1,13 @@
 import BaseModule from '../base'
-import { cloneDeep, isEmpty } from 'lodash'
+import { cloneDeep } from 'lodash'
+import { Managers } from '@arkecosystem/crypto'
 import { NETWORKS } from '@config'
+import { isEmpty } from '@/utils'
 import eventBus from '@/plugins/event-bus'
 import NetworkModel from '@/models/network'
 import Client from '@/services/client'
 import Vue from 'vue'
+import { reqwest } from '@/utils/http'
 
 export default new BaseModule(NetworkModel, {
 
@@ -47,26 +50,89 @@ export default new BaseModule(NetworkModel, {
   },
 
   actions: {
-    load ({ commit, getters }) {
-      const all = cloneDeep(getters['all'])
+    load ({ commit, getters, rootGetters }) {
+      const all = cloneDeep(getters.all)
       if (!isEmpty(all)) {
+        // Update API server on existing networks
+        const servers = {
+          'ark.devnet': 'https://dwallets.ark.io',
+          'ark.mainnet': 'http://explorer.blockpool.io:9031'
+        }
+        const sanitizedAll = all.map(network => {
+          const server = servers[network.id] || network.server
+          return {
+            ...network,
+            server
+          }
+        })
+
         // TODO: remove in future major version
         // This is a "hack" to make sure all custom networks are in state.all
-        let missingCustom = false
-        for (const custom of Object.values(getters['customNetworks'])) {
-          if (!all.find(network => network.name === custom.name)) {
-            all.push(custom)
-            missingCustom = true
+        for (const custom of Object.values(getters.customNetworks)) {
+          if (!sanitizedAll.find(network => network.name === custom.name)) {
+            sanitizedAll.push(custom)
           }
         }
-        if (missingCustom) {
-          commit('SET_ALL', all)
-        }
 
-        return
+        commit('SET_ALL', sanitizedAll)
+      } else {
+        commit('SET_ALL', NETWORKS)
       }
 
-      commit('SET_ALL', NETWORKS)
+      const sessionNetwork = rootGetters['session/network']
+      if (sessionNetwork && sessionNetwork.crypto && sessionNetwork.constants) {
+        Managers.configManager.setConfig(cloneDeep(sessionNetwork.crypto))
+        Managers.configManager.setHeight(sessionNetwork.constants.height)
+      }
+    },
+
+    /*
+     * Update data of the network
+     */
+    async updateData ({ commit, rootGetters }, network = null) {
+      if (!network) {
+        network = cloneDeep(rootGetters['session/network'])
+      }
+
+      try {
+        const crypto = await Client.fetchNetworkCrypto(network.server)
+        const { constants, core } = await Client.fetchNetworkConfig(network.server)
+
+        if (core.version) {
+          network.apiVersion = core.version
+        }
+
+        // TODO: remove in future major version
+        // this is a "hack" to make sure the known wallets url is set on the default networks
+        if (!network.knownWalletsUrl) {
+          const defaultNetwork = NETWORKS.find(defaultNetwork => defaultNetwork.id === network.id)
+
+          if (defaultNetwork) {
+            network.knownWalletsUrl = defaultNetwork.knownWalletsUrl
+          }
+        }
+
+        if (network.knownWalletsUrl) {
+          try {
+            const knownWallets = await reqwest(network.knownWalletsUrl, {
+              json: true
+            })
+            network.knownWallets = knownWallets.body
+          } catch (error) {
+            this._vm.$logger.error('Could not retrieve known wallets: ', error)
+          }
+        }
+
+        commit('UPDATE', {
+          ...network,
+          constants
+        })
+
+        Managers.configManager.setConfig(cloneDeep(crypto))
+        Managers.configManager.setHeight(constants.height)
+      } catch (error) {
+        this._vm.$logger.error('Could not update network data: ', error)
+      }
     },
 
     /*
@@ -81,7 +147,7 @@ export default new BaseModule(NetworkModel, {
         const feeStatistics = await Client.fetchFeeStatistics(network.server)
         commit('UPDATE', {
           ...network,
-          feeStatistics
+          feeStatistics: { ...feeStatistics }
         })
       } catch (error) {
         // Fees couldn't be updated
